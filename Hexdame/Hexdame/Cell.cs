@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    public enum Occupancy { Empty = 0, White = 2, WhiteKing = 3, Red = 4, RedKing = 5 };
-
     class Cell
     {
+        public enum Occupancy { Empty = 0, White = 2, WhiteKing = 3, Red = 4, RedKing = 5 };
+
         private Occupancy content;
 
         public Occupancy Content 
@@ -18,9 +18,19 @@ namespace Hexdame
             get { return content; }
         }
 
-        public bool IsKing
+        public bool ContainsKing
         {
             get { return ((int)content & 1) == 1; }
+        }
+
+        public bool ContainsWhite
+        {
+            get { return ((int)content & 2) == 1; }
+        }
+
+        public bool ContainsRed
+        {
+            get { return ((int)content & 4) == 1; }
         }
 
         public Cell(Occupancy content)

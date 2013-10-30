@@ -8,7 +8,7 @@ namespace Hexdame
 {
     class Move
     {
-        List<Position> positions;
+        private List<Position> positions;
 
         public Move(params Position[] positions)
         {
@@ -17,6 +17,21 @@ namespace Hexdame
             {
                 this.positions.Add(positions[i]);
             }
+        }
+
+        public Position GetStartingPosition()
+        {
+            return GetPosition(0);
+        }
+
+        public Position GetPosition(int index)
+        {
+            return positions[index];
+        }
+
+        public int GetNumberOfPositions()
+        {
+            return positions.Count;
         }
     }
 }

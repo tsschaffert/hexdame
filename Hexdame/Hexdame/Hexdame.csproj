@@ -54,10 +54,20 @@
     <Compile Include="Game.cs" />
     <Compile Include="Gameboard.cs" />
     <Compile Include="GameLogic.cs" />
+    <Compile Include="GuiController.cs" />
+    <Compile Include="HexdameButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="IComputerPlayer.cs" />
+    <Compile Include="IHumanPlayer.cs" />
+    <Compile Include="IPlayer.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

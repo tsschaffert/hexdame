@@ -21,7 +21,7 @@ namespace Hexdame
 
                 for (int j = 0; j < numberOfCells; j++)
                 {
-                    gameboard[i][j] = new Cell(Occupancy.Empty);
+                    gameboard[i][j] = new Cell(Cell.Occupancy.Empty);
                 }
             }
 
@@ -58,24 +58,24 @@ namespace Hexdame
 
         public void Reset()
         {
-            for (int i = 0; i < FIELD_SIZE; i++)
+            for (int i = 1; i <= FIELD_SIZE; i++)
             {
-                for (int j = 0; j < FIELD_SIZE; j++)
+                for (int j = 1; j <= FIELD_SIZE; j++)
                 {
                     Position position = new Position(i, j);
                     if(ValidCell(position))
                     {
-                        if (i <= 3 && j <= 3)
+                        if (i <= 4 && j <= 4)
                         {
-                            GetCell(position).Content = Occupancy.White;
+                            GetCell(position).Content = Cell.Occupancy.White;
                         }
-                        else if (i >= FIELD_SIZE-1 - 3 && j >= FIELD_SIZE-1 - 3)
+                        else if (i >= FIELD_SIZE - 3 && j >= FIELD_SIZE - 3)
                         {
-                            GetCell(position).Content = Occupancy.Red;
+                            GetCell(position).Content = Cell.Occupancy.Red;
                         }
                         else
                         {
-                            GetCell(position).Content = Occupancy.Empty;
+                            GetCell(position).Content = Cell.Occupancy.Empty;
                         }
                     }
                 }
@@ -90,10 +90,10 @@ namespace Hexdame
             const int MAX = 5;
 
             //Count entries for each row
-            for (int sum = 16; sum >= 0; sum--)
+            for (int sum = 18; sum >= 0; sum--)
             {
                 int counter = 0;
-                for (int i = 0; i < FIELD_SIZE; i++)
+                for (int i = 1; i <= FIELD_SIZE; i++)
                 {
                     Position position = new Position(i, sum - i);
                     if (ValidCell(position))
@@ -105,15 +105,15 @@ namespace Hexdame
             }
 
             //Build String
-            for (int sum = 16; sum >= 0; sum--)
+            for (int sum = 18; sum >= 2; sum--)
             {
                 //Add Spaces
-                for (int i = 0; i < MAX - entries[16 - sum]; i++)
+                for (int i = 0; i < MAX - entries[18 - sum]; i++)
                 {
                     sb.Append(" ");
                 }
 
-                for (int i = 0; i < FIELD_SIZE; i++)
+                for (int i = 1; i <= FIELD_SIZE; i++)
                 {
                     Position position = new Position(i, sum - i);
                     if (ValidCell(position))
