@@ -58,6 +58,7 @@
     <Compile Include="HexdameButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="HumanPlayer.cs" />
     <Compile Include="IComputerPlayer.cs" />
     <Compile Include="IHumanPlayer.cs" />
     <Compile Include="IPlayer.cs" />

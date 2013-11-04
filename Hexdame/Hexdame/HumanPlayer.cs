@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    interface IComputerPlayer : IPlayer
+    class HumanPlayer : IHumanPlayer
     {
-        Move GetMove();
+
     }
 }

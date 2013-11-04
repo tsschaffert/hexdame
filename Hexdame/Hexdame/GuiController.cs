@@ -10,6 +10,9 @@ namespace Hexdame
     {
         private Game game;
         private Gui gui;
+        private bool guiInputAllowed;
+
+        public bool GuiInputAllowed { set { guiInputAllowed = value; } get { return guiInputAllowed; } }
 
         private List<Position> currentPositions;
 
@@ -25,7 +28,7 @@ namespace Hexdame
 
         public void SendPosition(Position position)
         {
-            if (!AllowGuiInput())
+            if (!GuiInputAllowed)
             {
                 return;
             }
@@ -46,9 +49,9 @@ namespace Hexdame
             currentPositions.Clear();
         }
 
-        public bool AllowGuiInput()
+        public void UpdateGui(Gameboard gameboard)
         {
-            return true;
+            gui.UpdateGui(gameboard);
         }
     }
 }

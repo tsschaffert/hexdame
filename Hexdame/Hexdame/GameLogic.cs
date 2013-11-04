@@ -15,9 +15,9 @@ namespace Hexdame
             this.gameboard = gameboard;
         }
 
-        public void ApplyMove(Move move)
+        public void ApplyMove(Game.Player activePlayer, Move move)
         {
-            if (!IsValidMove(move))
+            if (!IsValidMove(activePlayer, move))
             {
                 return;
             }
@@ -29,10 +29,11 @@ namespace Hexdame
             startingCell.Content = Cell.Occupancy.Empty;
             moveToCell.Content = stoneToMove;
 
+            Console.WriteLine("Player " + (int)activePlayer + ":");
             Console.WriteLine(gameboard);
         }
 
-        public bool IsValidMove(Move move)
+        public bool IsValidMove(Game.Player activePlayer, Move move)
         {
             return true;
         }

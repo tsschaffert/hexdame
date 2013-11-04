@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    struct Position
+    public struct Position
     {
         private int number;
         private int character;
@@ -47,6 +47,16 @@ namespace Hexdame
         public static bool operator !=(Position a, Position b)
         {
             return !(a==b);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Position)
+            {
+                Position pos = (Position)obj;
+                return pos == this;
+            }
+            return false;
         }
     }
 }

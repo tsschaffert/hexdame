@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    class Gameboard
+    public class Gameboard : ICloneable
     {
         private Cell[][] gameboard;
         public const int FIELD_SIZE = 9;
@@ -126,6 +126,21 @@ namespace Hexdame
             }
 
             return sb.ToString();
+        }
+
+        public object Clone()
+        {
+            Gameboard ret = new Gameboard();
+
+            for (int i = 0; i < gameboard.Length; i++)
+            {
+                for (int j = 0; j < gameboard[i].Length; j++)
+                {
+                    ret.gameboard[i][j] = (Cell)this.gameboard[i][j].Clone();
+                }
+            }
+
+            return ret;
         }
     }
 }

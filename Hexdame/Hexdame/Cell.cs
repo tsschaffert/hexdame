@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    class Cell
+    public class Cell : ICloneable
     {
         public enum Occupancy { Empty = 0, White = 2, WhiteKing = 3, Red = 4, RedKing = 5 };
 
@@ -41,6 +41,11 @@ namespace Hexdame
         public override string ToString()
         {
             return Content.ToString("d");
+        }
+
+        public object Clone()
+        {
+            return new Cell(this.Content);
         }
     }
 }
