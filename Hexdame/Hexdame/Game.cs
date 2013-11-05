@@ -41,13 +41,18 @@ namespace Hexdame
             NextMove();
         }
 
-        public void SendMove(Move move)
+        public bool SendMove(Move move)
         {
-            gameLogic.ApplyMove(activePlayer, move);
+            bool success = gameLogic.ApplyMove(activePlayer, move);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 
-            NextMove();
+            if (success)
+            {
+                NextMove();
+            }
+
+            return success;
         }
 
         public void NextMove()
@@ -58,7 +63,7 @@ namespace Hexdame
             {
                 guiController.GuiInputAllowed = false;
                 IComputerPlayer computerPlayer = (IComputerPlayer)players[(int)activePlayer];
-                SendMove(computerPlayer.GetMove());
+                while (!SendMove(computerPlayer.GetMove())) ;
             }
             else if (players[(int)activePlayer] is IHumanPlayer)
             {

@@ -33,5 +33,23 @@ namespace Hexdame
         {
             return positions.Count;
         }
+
+        public static bool operator ==(Move a, Move b)
+        {
+            for (int i = 0; i < a.positions.Count; i++)
+            {
+                if (a.positions[i] != b.positions[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool operator !=(Move a, Move b)
+        {
+            return !(a == b);
+        }
     }
 }

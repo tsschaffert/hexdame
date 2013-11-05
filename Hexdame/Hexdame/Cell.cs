@@ -25,17 +25,27 @@ namespace Hexdame
 
         public bool ContainsWhite
         {
-            get { return ((int)content & 2) == 1; }
+            get { return ((int)content & 2) == 2; }
         }
 
         public bool ContainsRed
         {
-            get { return ((int)content & 4) == 1; }
+            get { return ((int)content & 4) == 4; }
+        }
+
+        public bool IsEmpty
+        {
+            get { return content == Occupancy.Empty; }
         }
 
         public Cell(Occupancy content)
         {
             this.content = content;
+        }
+
+        public void PromoteToKing()
+        {
+            Content = (Occupancy)((int)Content | 1);
         }
 
         public override string ToString()

@@ -39,9 +39,10 @@ namespace Hexdame
                         character += i - 4;
                     }
                     Console.WriteLine(number + "," + character);
+                    button.Text = number + "," + character;
                     button.FieldPosition = new Position(number, character);
 
-                    button.Location = new Point(300 + (i>4?250:i*50) - j*50, 400 - 20 * (number + character - 2));
+                    button.Location = new Point(200 + (i>4?250:(i+1)*50) - j*50, 400 - 20 * (number + character - 2));
                     button.Width = 50;
                     button.Height = 20;
 

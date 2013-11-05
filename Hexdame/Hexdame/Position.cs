@@ -11,6 +11,16 @@ namespace Hexdame
         private int number;
         private int character;
 
+        public int Number
+        {
+            get { return number; }
+        }
+
+        public int Character
+        {
+            get { return character; }
+        }
+
         public Position(int number, char character)
             : this(number, (int)(character - 'a' + 1))
         {
