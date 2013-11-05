@@ -36,6 +36,11 @@ namespace Hexdame
 
         public static bool operator ==(Move a, Move b)
         {
+            if (a.positions.Count != b.positions.Count)
+            {
+                return false;
+            }
+
             for (int i = 0; i < a.positions.Count; i++)
             {
                 if (a.positions[i] != b.positions[i])
@@ -50,6 +55,21 @@ namespace Hexdame
         public static bool operator !=(Move a, Move b)
         {
             return !(a == b);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Move)
+            {
+                Move m = (Move)obj;
+                return m == this;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return positions.Count;// TODO
         }
     }
 }

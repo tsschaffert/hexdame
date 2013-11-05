@@ -46,7 +46,7 @@ namespace Hexdame
             int x = position.GetArrayIndexX();
             int y = position.GetArrayIndexY();
 
-            if (x >= gameboard.Length || y >= gameboard[x].Length || x < 0 || y < 0)
+            if (x >= gameboard.Length || x < 0 || y >= gameboard[x].Length || y < 0)
             {
                 return false;
             }
