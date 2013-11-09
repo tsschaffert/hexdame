@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    interface IHumanPlayer : IPlayer
+    class HumanPlayer : AbstractHumanPlayer
     {
+        public HumanPlayer(Game.Player playerType)
+            : base(playerType)
+        {
+
+        }
     }
 }

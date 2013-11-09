@@ -12,7 +12,7 @@ namespace Hexdame
         private GameLogic gameLogic;
         private GuiController guiController;
 
-        private IPlayer[] players;
+        private AbstractPlayer[] players;
         Player activePlayer;
 
         public const int NUMBER_OF_PLAYERS = 2;
@@ -23,7 +23,7 @@ namespace Hexdame
             gameboard = new Gameboard();
             gameLogic = new GameLogic(gameboard);
             this.guiController = guiController;
-            players = new IPlayer[NUMBER_OF_PLAYERS];
+            players = new AbstractPlayer[NUMBER_OF_PLAYERS];
             activePlayer = Player.Red;// Will be switched before first move
             NewGame();
         }
@@ -32,8 +32,8 @@ namespace Hexdame
         {
             gameboard.Reset();
 
-            players[(int)Player.White] = new HumanPlayer();
-            players[(int)Player.Red] = new HumanPlayer();
+            players[(int)Player.White] = new HumanPlayer(Player.White);
+            players[(int)Player.Red] = new RandomPlayer(Player.Red);
 
             Console.WriteLine(gameboard);
             guiController.UpdateGui(gameboard);
@@ -59,13 +59,13 @@ namespace Hexdame
         {
             SwitchActivePlayer();
 
-            if(players[(int)activePlayer] is IComputerPlayer)
+            if(players[(int)activePlayer] is AbstractComputerPlayer)
             {
                 guiController.GuiInputAllowed = false;
-                IComputerPlayer computerPlayer = (IComputerPlayer)players[(int)activePlayer];
-                while (!SendMove(computerPlayer.GetMove())) ;
+                AbstractComputerPlayer computerPlayer = (AbstractComputerPlayer)players[(int)activePlayer];
+                while (!SendMove(computerPlayer.GetMove(gameboard))) ;
             }
-            else if (players[(int)activePlayer] is IHumanPlayer)
+            else if (players[(int)activePlayer] is AbstractHumanPlayer)
             {
                 guiController.GuiInputAllowed = true;
             }

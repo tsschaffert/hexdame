@@ -44,30 +44,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cell.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="Model\Cell.cs" />
+    <Compile Include="Gui\Gui.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Gui\Gui.Designer.cs">
+      <DependentUpon>Gui.cs</DependentUpon>
     </Compile>
     <Compile Include="Game.cs" />
-    <Compile Include="Gameboard.cs" />
-    <Compile Include="GameLogic.cs" />
-    <Compile Include="GuiController.cs" />
-    <Compile Include="HexdameButton.cs">
+    <Compile Include="Model\Gameboard.cs" />
+    <Compile Include="Logic\GameLogic.cs" />
+    <Compile Include="Gui\GuiController.cs" />
+    <Compile Include="Gui\HexdameButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="HumanPlayer.cs" />
-    <Compile Include="IComputerPlayer.cs" />
-    <Compile Include="IHumanPlayer.cs" />
-    <Compile Include="IPlayer.cs" />
-    <Compile Include="Move.cs" />
-    <Compile Include="Position.cs" />
+    <Compile Include="Player\HumanPlayer.cs" />
+    <Compile Include="Player\AbstractComputerPlayer.cs" />
+    <Compile Include="Player\AbstractHumanPlayer.cs" />
+    <Compile Include="Player\AbstractPlayer.cs" />
+    <Compile Include="Model\Move.cs" />
+    <Compile Include="Model\Position.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Player\RandomPlayer.cs" />
+    <EmbeddedResource Include="Gui\Gui.resx">
+      <DependentUpon>Gui.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -91,6 +92,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

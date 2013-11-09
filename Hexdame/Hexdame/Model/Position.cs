@@ -68,5 +68,10 @@ namespace Hexdame
             }
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return Number * 10 + Character;
+        }
     }
 }
