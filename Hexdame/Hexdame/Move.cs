@@ -10,6 +10,36 @@ namespace Hexdame
     {
         private List<Position> positions;
 
+        public int Captures
+        {
+            get
+            {
+                if (positions.Count < 2)
+                {
+                    return -1;
+                }
+                else if (positions.Count > 2)
+                {
+                    return positions.Count - 1;
+                }
+                else
+                {
+                    int deltaNumber = positions[1].Number - positions[0].Number;
+                    int deltaCharacter = positions[1].Character - positions[0].Character;
+
+                    // TODO won't work with kings
+                    if (Math.Abs(deltaNumber) == 2 || Math.Abs(deltaCharacter) == 2)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+            }
+        }
+
         public Move(params Position[] positions)
         {
             this.positions = new List<Position>();

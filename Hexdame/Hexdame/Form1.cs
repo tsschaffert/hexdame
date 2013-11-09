@@ -79,6 +79,19 @@ namespace Hexdame
             foreach(HexdameButton button in playButtons)
             {
                 button.Text = gameboard.GetCell(button.FieldPosition).Content.ToString();
+                button.Checked = false;
+                if (gameboard.GetCell(button.FieldPosition).ContainsWhite)
+                {
+                    button.BackColor = Color.White;
+                }
+                else if (gameboard.GetCell(button.FieldPosition).ContainsRed)
+                {
+                    button.BackColor = Color.Red;
+                }
+                else
+                {
+                    button.BackColor = Color.Transparent;
+                }
             }
         }
     }

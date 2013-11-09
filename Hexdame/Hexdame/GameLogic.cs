@@ -55,7 +55,16 @@ namespace Hexdame
                 currentPosition = nextPosition;
             }
 
-            // TODO Check for king
+            // Check for king
+            Position lastPosition = move.GetPosition(move.GetNumberOfPositions() - 1);
+            int kingRow = activePlayer == Game.Player.White ? 9 : 1;
+            if (lastPosition.Number == kingRow || lastPosition.Character == kingRow)
+            {
+                if (!gameboard.GetCell(lastPosition).ContainsKing)
+                {
+                    gameboard.GetCell(lastPosition).PromoteToKing();
+                }
+            }
 
             // TODO Check for win
             
@@ -69,41 +78,6 @@ namespace Hexdame
         {
             List<Move> validMoves = GetPossibleMoves(activePlayer);
             return validMoves.Contains(move);
-
-            if (move.GetNumberOfPositions() <= 1)
-            {
-                return false;
-            }
-
-            Position startingPosition = move.GetStartingPosition();
-            Cell startingCell = gameboard.GetCell(startingPosition);
-            if ((startingCell.ContainsWhite && activePlayer == Game.Player.Red)
-                || (startingCell.ContainsRed && activePlayer == Game.Player.White))
-            {
-                return false;
-            }
-
-            int indexNextPosition = 1;
-
-            Position currentPosition = startingPosition;
-            
-
-            while (indexNextPosition < move.GetNumberOfPositions())
-            {
-                Position nextPosition = move.GetPosition(indexNextPosition);
-
-                if (!gameboard.GetCell(nextPosition).IsEmpty)
-                {
-                    return false;
-                }
-
-
-                indexNextPosition++;
-                currentPosition = nextPosition;
-            }
-            
-
-            return true;
         }
 
         public List<Move> GetPossibleMoves(Game.Player activePlayer)
@@ -130,8 +104,19 @@ namespace Hexdame
                 }
             }
 
+            // Get max number of captures
+            int maxCaptures = 0;
+            foreach (Move move in possibleMoves)
+            {
+                int captures = move.Captures;
+                if (captures > maxCaptures)
+                {
+                    maxCaptures = captures;
+                }
+            }
+
             // Filter invalid moves
-            return new List<Move>(possibleMoves.Where(position => position.GetNumberOfPositions() >= 2));
+            return new List<Move>(possibleMoves.Where(position => position.Captures == maxCaptures));
         }
 
         public List<Move> GetPossibleMovesForPosition(Game.Player activePlayer, Position currentPosition)
