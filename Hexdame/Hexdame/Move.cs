@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    class Move
+    class Move : ICloneable
     {
         private List<Position> positions;
 
@@ -67,9 +67,48 @@ namespace Hexdame
             return false;
         }
 
+        public void InsertPosition(int index, Position item)
+        {
+            positions.Insert(index, item);
+        }
+
+        public void AddPosition(Position item)
+        {
+            positions.Add(item);
+        }
+
+        public void RemoveLastPosition()
+        {
+            if (positions.Count > 0)
+            {
+                positions.RemoveAt(positions.Count - 1);
+            }
+        }
+
         public override int GetHashCode()
         {
             return positions.Count;// TODO
         }
+
+        public object Clone()
+        {
+            Move move = new Move(this.positions.ToArray());
+            return move;
+        }
+
+        public bool ContainsCapture(Position capturePosition)
+        {
+            for (int i = 0; i < positions.Count - 1; i++)
+            {
+                Position current = positions[i];
+                Position next = positions[i+1];
+                Position currentCapurePosition = new Position(current.Number + (next.Number - current.Number) / 2, current.Character + (next.Character - current.Character) / 2);
+                if (currentCapurePosition == capturePosition)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }   
     }
 }

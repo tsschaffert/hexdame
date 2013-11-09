@@ -124,13 +124,14 @@ namespace Hexdame
                             || (currentCell.ContainsRed && activePlayer == Game.Player.Red))
                         {
                             possibleMoves.AddRange(GetPossibleMovesForPosition(activePlayer, currentPosition));
-                            possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(activePlayer, currentPosition));
+                            possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(new Move(), activePlayer, currentPosition));
                         }
                     }
                 }
             }
 
-            return possibleMoves;
+            // Filter invalid moves
+            return new List<Move>(possibleMoves.Where(position => position.GetNumberOfPositions() >= 2));
         }
 
         public List<Move> GetPossibleMovesForPosition(Game.Player activePlayer, Position currentPosition)
@@ -156,7 +157,7 @@ namespace Hexdame
             return possibleMoves;
         }
 
-        public List<Move> GetPossibleCaptureMovesForPosition(Game.Player activePlayer, Position currentPosition)
+        public List<Move> GetPossibleCaptureMovesForPosition(Move currentMove, Game.Player activePlayer, Position currentPosition)
         {
             List<Move> possibleMoves = new List<Move>();
 
@@ -167,14 +168,23 @@ namespace Hexdame
 
             Cell currentCell = gameboard.GetCell(currentPosition);
 
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(activePlayer, currentPosition, 1, 0));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(activePlayer, currentPosition, 0, 1));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(activePlayer, currentPosition, 1, 1));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(activePlayer, currentPosition, -1, 0));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(activePlayer, currentPosition, 0, -1));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(activePlayer, currentPosition, -1, -1));
+            currentMove.AddPosition(currentPosition);
+
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, currentPosition, 1, 0));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, currentPosition, 0, 1));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, currentPosition, 1, 1));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, currentPosition, -1, 0));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, currentPosition, 0, -1));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, currentPosition, -1, -1));
 
             // TODO if king
+
+            if (possibleMoves.Count == 0 && currentMove.GetNumberOfPositions() >= 2)
+            {
+                possibleMoves.Add((Move)currentMove.Clone());
+            }
+
+            currentMove.RemoveLastPosition();
 
             return possibleMoves;
         }
@@ -200,46 +210,27 @@ namespace Hexdame
             return possibleMoves;
         }
 
-        public List<Move> GetPossibleCaptureMovesForPositionAndDirection(Game.Player activePlayer, Position currentPosition, int directionNumber, int directionCharacter)
+        public List<Move> GetPossibleCaptureMovesForPositionAndDirection(Move currentMove, Game.Player activePlayer, Position currentPosition, int directionNumber, int directionCharacter)
         {
             List<Move> possibleMoves = new List<Move>();
 
             Position possibleOpponentPosition = new Position(currentPosition.Number + directionNumber, currentPosition.Character + directionCharacter);
             Position possibleMovePosition = new Position(currentPosition.Number + 2*directionNumber, currentPosition.Character + 2*directionCharacter);
 
-            if (!gameboard.ValidCell(possibleOpponentPosition) || !gameboard.ValidCell(possibleMovePosition))
+            // Check if no capture possible or capture already done
+            if (!gameboard.ValidCell(possibleOpponentPosition) || !gameboard.ValidCell(possibleMovePosition) || currentMove.ContainsCapture(possibleOpponentPosition))
             {
                 return possibleMoves;
             }
 
-
             Cell possibleOpponentCell = gameboard.GetCell(possibleOpponentPosition);
             Cell possibleMoveCell = gameboard.GetCell(possibleMovePosition);
 
-            if ((activePlayer == Game.Player.White && possibleOpponentCell.ContainsRed) ||
-                (activePlayer == Game.Player.Red && possibleOpponentCell.ContainsWhite) &&
+            if (((activePlayer == Game.Player.White && possibleOpponentCell.ContainsRed) ||
+                (activePlayer == Game.Player.Red && possibleOpponentCell.ContainsWhite)) &&
                 possibleMoveCell.IsEmpty)
             {
-                // TODO Abbruch aus Rekursion fehlt
-                /*List<Move> possibleMovesFromHere = GetPossibleCaptureMovesForPosition(activePlayer, possibleMovePosition);
-                // Add current position to further moves
-                for (int i = possibleMovesFromHere.Count - 1; i >= 0; i--)
-                {
-                    Position[] positionArray = new Position[possibleMovesFromHere[i].GetNumberOfPositions() + 1];
-                    positionArray[0] = currentPosition;
-                    for (int j = 1; j < positionArray.Length; j++)
-                    {
-                        positionArray[j] = possibleMovesFromHere[i].GetPosition(j - 1);
-                    }
-                }
-                if (possibleMovesFromHere.Count > 0)
-                {
-                    possibleMoves.AddRange(possibleMovesFromHere);
-                }
-                else*/
-                {
-                    possibleMoves.Add(new Move(currentPosition, possibleMovePosition));
-                }
+                possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(currentMove, activePlayer, possibleMovePosition));
             }
 
             return possibleMoves;
