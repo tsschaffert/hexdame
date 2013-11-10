@@ -59,13 +59,14 @@
     <Compile Include="Gui\HexdameButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Player\AbstractMinimaxPlayer.cs" />
     <Compile Include="Player\HumanPlayer.cs" />
     <Compile Include="Player\AbstractComputerPlayer.cs" />
     <Compile Include="Player\AbstractHumanPlayer.cs" />
     <Compile Include="Player\AbstractPlayer.cs" />
     <Compile Include="Model\Move.cs" />
     <Compile Include="Model\Position.cs" />
-    <Compile Include="Player\MinimaxPlayer.cs" />
+    <Compile Include="Player\SimpleMinimaxPlayer.cs" />
     <Compile Include="Player\Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

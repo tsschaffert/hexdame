@@ -38,8 +38,6 @@ namespace Hexdame
                     {
                         character += i - 4;
                     }
-                    Console.WriteLine(number + "," + character);
-                    button.Text = number + "," + character;
                     button.FieldPosition = new Position(number, character);
 
                     button.Location = new Point(200 + (i>4?250:(i+1)*50) - j*50, 400 - 20 * (number + character - 2));
@@ -49,7 +47,7 @@ namespace Hexdame
                     button.Click += button_Click;
 
                     playButtons[index] = button;
-                    this.Controls.Add(button);
+                    this.gamePanel.Controls.Add(button);
                     index++;
                 }
             }
@@ -93,6 +91,31 @@ namespace Hexdame
                     button.BackColor = Color.Transparent;
                 }
             }
+        }
+
+        public void AddMessage(String message)
+        {
+            if (messageLog.Text == "")
+            {
+                messageLog.AppendText(message);
+            }
+            else
+            {
+                messageLog.AppendText("\r\n"+message);
+            } 
+            messageLog.ScrollToCaret();
+        }
+
+        private void buttonNewGame_Click(object sender, EventArgs e)
+        {
+            controller.NewGame();
+            messageLog.Clear();
+        }
+
+        public void UpdateActivePlayer(Game.Player activePlayer)
+        {
+            labelCurrentPlayer.Text = "Player " + activePlayer.ToString() + "'s turn.";
+            labelCurrentPlayer.ForeColor = activePlayer == Game.Player.White ? Color.White : Color.Red;
         }
     }
 }

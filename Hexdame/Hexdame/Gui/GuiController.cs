@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    class GuiController
+    public class GuiController
     {
+        public delegate void InvokeDelegateUpdateGui(Gameboard gameboard);
+        public delegate void InvokeDelegateAddMessage(String message);
+        public delegate void InvokeDelegateUpdateActivePlayer(Game.Player activePlayer);
+
         private Game game;
         private Gui gui;
         private bool guiInputAllowed;
@@ -22,8 +26,6 @@ namespace Hexdame
             game = new Game(this);
 
             currentPositions = new List<Position>();
-
-            //game.SendMove(new Move(new Position(3,3), new Position(3,4)));
         }
 
         public void SendPosition(Position position)
@@ -51,7 +53,31 @@ namespace Hexdame
 
         public void UpdateGui(Gameboard gameboard)
         {
-            gui.UpdateGui(gameboard);
+            if (gui.Created)
+            {
+                gui.BeginInvoke(new InvokeDelegateUpdateGui(gui.UpdateGui), new object[] { gameboard });
+            }
+        }
+
+        public void AddMessage(String message)
+        {
+            if (gui.Created)
+            {
+                gui.BeginInvoke(new InvokeDelegateAddMessage(gui.AddMessage), new object[] { message });
+            }
+        }
+
+        public void NewGame()
+        {
+            game.NewGame();
+        }
+
+        public void UpdateActivePlayer(Game.Player activePlayer)
+        {
+            if (gui.Created)
+            {
+                gui.BeginInvoke(new InvokeDelegateUpdateActivePlayer(gui.UpdateActivePlayer), new object[] { activePlayer });
+            }
         }
     }
 }

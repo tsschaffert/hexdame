@@ -4,14 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Hexdame.Player;
+using System.Timers;
 
 namespace Hexdame
 {
-    class Game
+    public class Game
     {
         private Gameboard gameboard;
         private GameLogic gameLogic;
         private GuiController guiController;
+
+        private Timer timerNextMove;
 
         private AbstractPlayer[] players;
         Player activePlayer;
@@ -26,20 +29,28 @@ namespace Hexdame
             this.guiController = guiController;
             players = new AbstractPlayer[NUMBER_OF_PLAYERS];
             activePlayer = Player.Red;// Will be switched before first move
+            timerNextMove = new Timer(500);
+            timerNextMove.Elapsed += timerNextMove_Elapsed;
             NewGame();
+        }
+
+        void timerNextMove_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            timerNextMove.Stop();
+            NextMove();
         }
 
         public void NewGame()
         {
             gameboard.Reset();
 
-            players[(int)Player.White] = new HumanPlayer(Player.White);
-            players[(int)Player.Red] = new MinimaxPlayer(Player.Red);
+            players[(int)Player.White] = new RandomPlayer(Player.White);
+            players[(int)Player.Red] = new SimpleMinimaxPlayer(Player.Red);
 
-            Console.WriteLine(gameboard);
+            //Console.WriteLine(gameboard);
             guiController.UpdateGui(gameboard);
 
-            NextMove();
+            timerNextMove.Start();
         }
 
         public bool SendMove(Move move)
@@ -50,9 +61,11 @@ namespace Hexdame
 
             if (success)
             {
+                guiController.AddMessage("Player " + activePlayer.ToString() + " made a move: " + move);
+
                 if (!gameLogic.IsFinished())
                 {
-                    NextMove();
+                    timerNextMove.Start();
                 }
                 else
                 {
@@ -66,6 +79,8 @@ namespace Hexdame
         public void NextMove()
         {
             SwitchActivePlayer();
+
+            guiController.UpdateActivePlayer(activePlayer);
 
             if(players[(int)activePlayer] is AbstractComputerPlayer)
             {

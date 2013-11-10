@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    class Move : ICloneable
+    public class Move : ICloneable
     {
         private List<Position> positions;
 
@@ -139,6 +139,18 @@ namespace Hexdame
                 }
             }
             return false;
-        }   
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (Position pos in positions)
+            {
+                sb.Append(pos);
+                sb.Append(" -> ");
+            }
+            sb.Remove(sb.Length - 4, 4);
+            return sb.ToString();
+        }
     }
 }

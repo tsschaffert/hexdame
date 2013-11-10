@@ -68,8 +68,8 @@ namespace Hexdame
 
             // TODO Check for win
             
-            Console.WriteLine("Player " + (int)activePlayer + ":");
-            Console.WriteLine(gameboard);
+            //Console.WriteLine("Player " + (int)activePlayer + ":");
+            //Console.WriteLine(gameboard);
 
             return true;
         }
@@ -77,6 +77,12 @@ namespace Hexdame
         public bool IsValidMove(Game.Player activePlayer, Move move)
         {
             List<Move> validMoves = GetPossibleMoves(activePlayer);
+            // Debug
+            /*Console.WriteLine("Possible moves:");
+            foreach(Move m in validMoves)
+            {
+                Console.WriteLine("\t"+m);
+            }*/
             return validMoves.Contains(move);
         }
 
@@ -138,6 +144,15 @@ namespace Hexdame
             possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, currentPosition, moveDirection, moveDirection));
 
             // TODO if king   
+            if (currentCell.ContainsKing)
+            {
+                // For testing purposes: King may move in every direction but only one step at a time
+                moveDirection *= -1;
+
+                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, currentPosition, moveDirection, 0));
+                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, currentPosition, 0, moveDirection));
+                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, currentPosition, moveDirection, moveDirection));
+            }
 
             return possibleMoves;
         }

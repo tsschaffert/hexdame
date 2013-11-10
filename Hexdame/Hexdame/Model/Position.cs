@@ -73,5 +73,10 @@ namespace Hexdame
         {
             return Number * 10 + Character;
         }
+
+        public override string ToString()
+        {
+            return "("+Number+","+Character+")";
+        }
     }
 }
