@@ -249,5 +249,35 @@ namespace Hexdame
 
             return captures;
         }
+
+        public bool IsFinished()
+        {
+            int red = 0;
+            int white = 0;
+
+            for (int i = 1; i <= Gameboard.FIELD_SIZE; i++)
+            {
+                for (int j = 1; j <= Gameboard.FIELD_SIZE; j++)
+                {
+                    Position currentPosition = new Position(i, j);
+
+                    if (gameboard.ValidCell(currentPosition))
+                    {
+                        Cell currentCell = gameboard.GetCell(currentPosition);
+                        // Player man on current position?
+                        if (currentCell.ContainsRed)
+                        {
+                            red++;
+                        }
+                        else if (currentCell.ContainsWhite)
+                        {
+                            white++;
+                        }
+                    }
+                }
+            }
+
+            return white == 0 || red == 0;
+        }
     }
 }

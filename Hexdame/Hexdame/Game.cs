@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Hexdame.Player;
 
 namespace Hexdame
 {
@@ -33,7 +34,7 @@ namespace Hexdame
             gameboard.Reset();
 
             players[(int)Player.White] = new HumanPlayer(Player.White);
-            players[(int)Player.Red] = new RandomPlayer(Player.Red);
+            players[(int)Player.Red] = new MinimaxPlayer(Player.Red);
 
             Console.WriteLine(gameboard);
             guiController.UpdateGui(gameboard);
@@ -49,7 +50,14 @@ namespace Hexdame
 
             if (success)
             {
-                NextMove();
+                if (!gameLogic.IsFinished())
+                {
+                    NextMove();
+                }
+                else
+                {
+                    // Spiel zu Ende
+                }
             }
 
             return success;
