@@ -10,36 +10,6 @@ namespace Hexdame
     {
         private List<Position> positions;
 
-        public int Captures
-        {
-            get
-            {
-                if (positions.Count < 2)
-                {
-                    return -1;
-                }
-                else if (positions.Count > 2)
-                {
-                    return positions.Count - 1;
-                }
-                else
-                {
-                    int deltaNumber = positions[1].Number - positions[0].Number;
-                    int deltaCharacter = positions[1].Character - positions[0].Character;
-
-                    // TODO won't work with kings
-                    if (Math.Abs(deltaNumber) == 2 || Math.Abs(deltaCharacter) == 2)
-                    {
-                        return 1;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-            }
-        }
-
         public Move(params Position[] positions)
         {
             this.positions = new List<Position>();
@@ -132,10 +102,32 @@ namespace Hexdame
             {
                 Position current = positions[i];
                 Position next = positions[i+1];
-                Position currentCapurePosition = new Position(current.Number + (next.Number - current.Number) / 2, current.Character + (next.Character - current.Character) / 2);
-                if (currentCapurePosition == capturePosition)
+                int deltaNumberNext = next.Number - current.Number;
+                int deltaCharacterNext = next.Character - current.Character;
+                int deltaNumberCapture = capturePosition.Number - current.Number;
+                int deltaCharacterCapture = capturePosition.Character - current.Character;
+
+                // Check if capture position between two positions of move
+                if (deltaNumberNext == 0)
                 {
-                    return true;
+                    if ((Math.Abs(deltaCharacterCapture) < Math.Abs(deltaCharacterNext)) && (deltaCharacterCapture * deltaCharacterNext > 0) && deltaNumberCapture == 0)
+                    {
+                        return true;
+                    }
+                }
+                else if (deltaCharacterNext == 0)
+                {
+                    if ((Math.Abs(deltaNumberCapture) < Math.Abs(deltaNumberNext)) && (deltaNumberCapture * deltaNumberNext > 0) && deltaCharacterCapture == 0)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if ((Math.Abs(deltaNumberCapture) < Math.Abs(deltaNumberNext)) && (deltaNumberCapture * deltaNumberNext > 0) && (Math.Abs(deltaCharacterCapture) < Math.Abs(deltaCharacterNext)) && (deltaCharacterCapture * deltaCharacterNext > 0))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;

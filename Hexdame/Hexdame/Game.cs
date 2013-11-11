@@ -28,7 +28,6 @@ namespace Hexdame
             gameLogic = new GameLogic(gameboard);
             this.guiController = guiController;
             players = new AbstractPlayer[NUMBER_OF_PLAYERS];
-            activePlayer = Player.Red;// Will be switched before first move
             timerNextMove = new Timer(500);
             timerNextMove.Elapsed += timerNextMove_Elapsed;
             NewGame();
@@ -50,6 +49,9 @@ namespace Hexdame
             //Console.WriteLine(gameboard);
             guiController.UpdateGui(gameboard);
 
+            activePlayer = Player.Red;// Will be switched before first move
+
+            timerNextMove.Stop();
             timerNextMove.Start();
         }
 
