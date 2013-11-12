@@ -36,6 +36,7 @@ namespace Hexdame.Player
                 if (score > bestValue)
                 {
                     bestMove = move;
+                    bestValue = score;
                 }
             }
 
@@ -46,7 +47,7 @@ namespace Hexdame.Player
         {
             GameLogic gameLogic = new GameLogic(state);
 
-            if (depth == 0 || gameLogic.IsFinished())
+            if (depth <= 0 || gameLogic.IsFinished())
             {
                 return Evaluate(state);
             }
@@ -54,12 +55,13 @@ namespace Hexdame.Player
             int score;
 
             score = max?int.MinValue:int.MaxValue;
-            var possibleMoves = gameLogic.GetPossibleMoves(playerType);
+            Game.Player activePlayer = max ? playerType : (Game.Player)(1 - (int)playerType); // TODO
+            var possibleMoves = gameLogic.GetPossibleMoves(activePlayer);
             foreach (Move move in possibleMoves)
             {
                 Gameboard newState = (Gameboard)state.Clone();
                 GameLogic newLogic = new GameLogic(newState);
-                newLogic.ApplyMove(playerType, move);
+                newLogic.ApplyMove(activePlayer, move);
 
                 int value = MiniMax(newState, depth - 1, !max);
                 if (max && value > score)

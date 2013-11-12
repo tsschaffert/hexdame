@@ -66,6 +66,7 @@
     <Compile Include="Player\AbstractPlayer.cs" />
     <Compile Include="Model\Move.cs" />
     <Compile Include="Model\Position.cs" />
+    <Compile Include="Player\MediumMinimaxPlayer.cs" />
     <Compile Include="Player\SimpleMinimaxPlayer.cs" />
     <Compile Include="Player\Node.cs" />
     <Compile Include="Program.cs" />
