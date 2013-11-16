@@ -60,6 +60,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Player\AbstractMinimaxPlayer.cs" />
+    <Compile Include="Player\AlphaBetaPlayer.cs" />
     <Compile Include="Player\HumanPlayer.cs" />
     <Compile Include="Player\AbstractComputerPlayer.cs" />
     <Compile Include="Player\AbstractHumanPlayer.cs" />

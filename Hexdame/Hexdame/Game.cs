@@ -44,7 +44,7 @@ namespace Hexdame
             gameboard.Reset();
 
             players[(int)Player.White] = new RandomPlayer(Player.White);
-            players[(int)Player.Red] = new MediumMinimaxPlayer(Player.Red);
+            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 6);
 
             //Console.WriteLine(gameboard);
             guiController.UpdateGui(gameboard);
