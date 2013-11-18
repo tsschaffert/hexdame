@@ -11,6 +11,13 @@ namespace Hexdame
         private Cell[][] gameboard;
         public const int FIELD_SIZE = 9;
 
+        private static int[,] zobristRandomValues;
+
+        static Gameboard()
+        {
+            InitialiseZobristValues();
+        }
+
         public Gameboard()
         {
             gameboard = new Cell[FIELD_SIZE][];
@@ -141,6 +148,57 @@ namespace Hexdame
             }
 
             return ret;
+        }
+
+        private static void InitialiseZobristValues()
+        {
+            Random random = new Random();
+            zobristRandomValues = new int[FIELD_SIZE*FIELD_SIZE,6];
+            for (int i = 0; i < zobristRandomValues.GetLength(0); i++)
+            {
+                for (int j = 0; j < zobristRandomValues.GetLength(1); j++)
+                {
+                    zobristRandomValues[i,j] = random.Next();
+                }
+            }
+        }
+
+        public int GetZobristHash()
+        {
+            int hash = 0;
+            for (int i = 0; i < gameboard.Length; i++)
+            {
+                for (int j = 0; j < gameboard[i].Length; j++)
+                {
+                    hash ^= Gameboard.zobristRandomValues[i * FIELD_SIZE + j, (int)gameboard[i][j].Content];
+                }
+            }
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Gameboard)
+            {
+                Gameboard other = (Gameboard)obj;
+                for (int i = 0; i < gameboard.Length; i++)
+                {
+                    for (int j = 0; j < gameboard[i].Length; j++)
+                    {
+                        if (gameboard[i][j].Content != other.gameboard[i][j].Content)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return GetZobristHash();
         }
     }
 }

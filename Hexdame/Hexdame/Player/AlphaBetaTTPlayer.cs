@@ -2,19 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Hexdame.Model;
 
 namespace Hexdame.Player
 {
-    class AlphaBetaPlayer : AbstractComputerPlayer
+    class AlphaBetaTTPlayer : AbstractComputerPlayer
     {
         protected readonly int depth;
         protected Random random;
+        protected LimitedSizeDictionary<Int64, Transposition> transpositionTable;
 
-        public AlphaBetaPlayer(Game.Player playerType, int depth)
+        public AlphaBetaTTPlayer(Game.Player playerType, int depth)
             : base(playerType)
         {
             this.depth = depth;
             random = new Random();
+            transpositionTable = new LimitedSizeDictionary<long,Transposition>();
         }
 
         public override Move GetMove(Gameboard gameboard)
@@ -45,35 +48,93 @@ namespace Hexdame.Player
 
         public int AlphaBeta(Gameboard state, int depth, int alpha, int beta, bool myMove)
         {
+            // TODO Save current player in transposition table
+            Transposition transposition = null;
+            if(transpositionTable.ContainsKey(state.GetZobristHash()))
+            {
+                transposition = transpositionTable[state.GetZobristHash()];
+                if(transposition.Lowerbound >= beta)
+                {
+                    return transposition.Lowerbound;
+                }
+                if(transposition.Upperbound <= alpha)
+                {
+                    return transposition.Upperbound;
+                }
+                alpha = Math.Max(alpha, transposition.Lowerbound);
+                beta = Math.Min(beta, transposition.Upperbound);
+            }
+
             GameLogic gameLogic = new GameLogic(state);
             Game.Player activePlayer = myMove ? playerType : (Game.Player)(1 - (int)playerType); // TODO
+            int score;
 
             if (depth <= 0 || gameLogic.IsFinished())
             {
-                return myMove?Evaluate(state, activePlayer):-Evaluate(state, activePlayer);
+                score = myMove ? Evaluate(state, activePlayer) : -Evaluate(state, activePlayer);
+            }
+            else
+            {
+                score = int.MinValue;
+                var possibleMoves = gameLogic.GetPossibleMoves(activePlayer);
+
+                foreach (Move move in possibleMoves)
+                {
+                    Gameboard newState = (Gameboard)state.Clone();
+                    GameLogic newLogic = new GameLogic(newState);
+                    newLogic.ApplyMove(activePlayer, move);
+
+                    int value = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
+                    if (value > score)
+                    {
+                        score = value;
+                    }
+                    if (score > alpha)
+                    {
+                        alpha = score;
+                    }
+                    if (score >= beta)
+                    {
+                        break;
+                    }
+                }
             }
 
-            int score = int.MinValue;
-            var possibleMoves = gameLogic.GetPossibleMoves(activePlayer);
-
-            foreach (Move move in possibleMoves)
+            if (score <= alpha)
             {
-                Gameboard newState = (Gameboard)state.Clone();
-                GameLogic newLogic = new GameLogic(newState);
-                newLogic.ApplyMove(activePlayer, move);
-
-                int value = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
-                if (value > score)
+                if (transposition == null)
                 {
-                    score = value;
+                    transposition = new Transposition(alpha, score);
+                    transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
-                if (score > alpha)
+                else
                 {
-                    alpha = score;
+                    transposition.Upperbound = score;
                 }
-                if (score >= beta)
+            }
+            else if (score > alpha && score < beta)
+            {
+                if (transposition == null)
                 {
-                    break;
+                    transposition = new Transposition(score, score);
+                    transpositionTable.Add(state.GetZobristHash(), transposition);
+                }
+                else
+                {
+                    transposition.Lowerbound = score;
+                    transposition.Upperbound = score;
+                }
+            }
+            else if (score >= beta)
+            {
+                if (transposition == null)
+                {
+                    transposition = new Transposition(score, beta);
+                    transpositionTable.Add(state.GetZobristHash(), transposition);
+                }
+                else
+                {
+                    transposition.Lowerbound = score;
                 }
             }
 

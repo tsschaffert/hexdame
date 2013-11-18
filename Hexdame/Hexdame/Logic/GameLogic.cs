@@ -8,6 +8,10 @@ namespace Hexdame
 {
     class GameLogic
     {
+        // int.MAX_VALUE cannot be used because of asymmetry when negated
+        public const int WIN_VALUE = 1000000;
+        public const int LOSS_VALUE = -WIN_VALUE;
+
         private Gameboard gameboard;
 
         public GameLogic(Gameboard gameboard)
