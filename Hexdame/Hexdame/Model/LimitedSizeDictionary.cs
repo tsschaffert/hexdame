@@ -7,7 +7,7 @@ namespace Hexdame.Model
 {
     class LimitedSizeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
     {
-        public const int MAX_ITEMS = 2000000;
+        public const int MAX_ITEMS = 100000000;
 
         private Queue<TKey> keyQueue;
 

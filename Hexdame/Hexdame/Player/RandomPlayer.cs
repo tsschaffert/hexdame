@@ -20,7 +20,7 @@ namespace Hexdame.Player
         public override Move GetMove(Gameboard gameboard)
         {
             gameLogic = new GameLogic(gameboard);
-            List<Move> possibleMoves = gameLogic.GetPossibleMoves(playerType);
+            List<Move> possibleMoves = gameLogic.GetPossibleMoves();
             return possibleMoves[random.Next(possibleMoves.Count)];
         }
     }

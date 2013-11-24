@@ -9,11 +9,13 @@ namespace Hexdame.Model
     {
         public int Upperbound;
         public int Lowerbound;
+        public int Depth;
 
-        public Transposition(int lowerbound, int upperbound)
+        public Transposition(int lowerbound, int upperbound, int depth)
         {
             this.Lowerbound = lowerbound;
             this.Upperbound = upperbound;
+            this.Depth = depth;
         }
     }
 }

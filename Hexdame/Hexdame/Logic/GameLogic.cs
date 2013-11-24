@@ -19,9 +19,9 @@ namespace Hexdame
             this.gameboard = gameboard;
         }
 
-        public bool ApplyMove(Game.Player activePlayer, Move move)
+        public bool ApplyMove(Move move)
         {
-            if (!IsValidMove(activePlayer, move))
+            if (!IsValidMove(move))
             {
                 return false;
             }
@@ -43,7 +43,7 @@ namespace Hexdame
                 int deltaCharacter = nextPosition.Character - currentPosition.Character;
 
                 // Capture move?
-                Position? capturePosition = CheckForCapture(activePlayer, currentPosition, nextPosition);
+                Position? capturePosition = CheckForCapture(currentPosition, nextPosition);
                 if (capturePosition != null)
                 {
                     Cell captureCell = gameboard.GetCell((Position)capturePosition);
@@ -61,7 +61,7 @@ namespace Hexdame
 
             // Check for king
             Position lastPosition = move.GetPosition(move.GetNumberOfPositions() - 1);
-            int kingRow = activePlayer == Game.Player.White ? 9 : 1;
+            int kingRow = gameboard.CurrentPlayer == Game.Player.White ? 9 : 1;
             if (lastPosition.Number == kingRow || lastPosition.Character == kingRow)
             {
                 if (!gameboard.GetCell(lastPosition).ContainsKing)
@@ -70,20 +70,24 @@ namespace Hexdame
                 }
             }
 
+            // Switch Player
+            gameboard.CurrentPlayer = GetNextPlayer(gameboard.CurrentPlayer);
+
             // TODO Check for win
 
             return true;
         }
 
-        public bool IsValidMove(Game.Player activePlayer, Move move)
+        public bool IsValidMove(Move move)
         {
-            List<Move> validMoves = GetPossibleMoves(activePlayer);
+            List<Move> validMoves = GetPossibleMoves();
             return validMoves.Contains(move);
         }
 
-        public List<Move> GetPossibleMoves(Game.Player activePlayer)
+        public List<Move> GetPossibleMoves()
         {
             List<Move> possibleMoves = new List<Move>();
+            Game.Player activePlayer = gameboard.CurrentPlayer;
 
             for (int i = 1; i <= Gameboard.FIELD_SIZE; i++)
             {
@@ -99,8 +103,8 @@ namespace Hexdame
                             || (currentCell.ContainsRed && activePlayer == Game.Player.Red))
                         {
                             bool king = currentCell.ContainsKing;
-                            possibleMoves.AddRange(GetPossibleMovesForPosition(activePlayer, king, currentPosition));
-                            possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(new Move(), activePlayer, king, currentPosition));
+                            possibleMoves.AddRange(GetPossibleMovesForPosition(king, currentPosition));
+                            possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(new Move(), king, currentPosition));
                         }
                     }
                 }
@@ -121,9 +125,10 @@ namespace Hexdame
             return new List<Move>(possibleMoves.Where(move => NumberOfCaptures(move) == maxCaptures));
         }
 
-        public List<Move> GetPossibleMovesForPosition(Game.Player activePlayer, bool king, Position currentPosition)
+        public List<Move> GetPossibleMovesForPosition(bool king, Position currentPosition)
         {
             List<Move> possibleMoves = new List<Move>();
+            Game.Player activePlayer = gameboard.CurrentPlayer;
 
             if (!gameboard.ValidCell(currentPosition))
             {
@@ -134,26 +139,27 @@ namespace Hexdame
     
             int moveDirection = activePlayer == Game.Player.White ? 1 : -1; // Player one moves to top
 
-            possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, king, currentPosition, moveDirection, 0));
-            possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, king, currentPosition, 0, moveDirection));
-            possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, king, currentPosition, moveDirection, moveDirection));
+            possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(king, currentPosition, moveDirection, 0));
+            possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(king, currentPosition, 0, moveDirection));
+            possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(king, currentPosition, moveDirection, moveDirection));
  
             if (king)
             {
                 // Test in every direction
                 moveDirection *= -1;
 
-                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, king, currentPosition, moveDirection, 0));
-                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, king, currentPosition, 0, moveDirection));
-                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(activePlayer, king, currentPosition, moveDirection, moveDirection));
+                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(king, currentPosition, moveDirection, 0));
+                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(king, currentPosition, 0, moveDirection));
+                possibleMoves.AddRange(GetPossibleMovesForPositionAndDirection(king, currentPosition, moveDirection, moveDirection));
             }
 
             return possibleMoves;
         }
 
-        public List<Move> GetPossibleCaptureMovesForPosition(Move currentMove, Game.Player activePlayer, bool king, Position currentPosition)
+        public List<Move> GetPossibleCaptureMovesForPosition(Move currentMove, bool king, Position currentPosition)
         {
             List<Move> possibleMoves = new List<Move>();
+            Game.Player activePlayer = gameboard.CurrentPlayer;
 
             if (!gameboard.ValidCell(currentPosition))
             {
@@ -164,12 +170,12 @@ namespace Hexdame
 
             currentMove.AddPosition(currentPosition);
 
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, king, currentPosition, 1, 0));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, king, currentPosition, 0, 1));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, king, currentPosition, 1, 1));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, king, currentPosition, -1, 0));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, king, currentPosition, 0, -1));
-            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, activePlayer, king, currentPosition, -1, -1));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, king, currentPosition, 1, 0));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, king, currentPosition, 0, 1));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, king, currentPosition, 1, 1));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, king, currentPosition, -1, 0));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, king, currentPosition, 0, -1));
+            possibleMoves.AddRange(GetPossibleCaptureMovesForPositionAndDirection(currentMove, king, currentPosition, -1, -1));
 
             // If no more moves possible, return current move
             if (possibleMoves.Count == 0 && currentMove.GetNumberOfPositions() >= 2)
@@ -182,9 +188,10 @@ namespace Hexdame
             return possibleMoves;
         }
 
-        public List<Move> GetPossibleMovesForPositionAndDirection(Game.Player activePlayer, bool king, Position currentPosition, int directionNumber, int directionCharacter)
+        public List<Move> GetPossibleMovesForPositionAndDirection(bool king, Position currentPosition, int directionNumber, int directionCharacter)
         {
             List<Move> possibleMoves = new List<Move>();
+            Game.Player activePlayer = gameboard.CurrentPlayer;
 
             Position positionToCheck = new Position(currentPosition.Number + directionNumber, currentPosition.Character + directionCharacter);
 
@@ -204,9 +211,10 @@ namespace Hexdame
             return possibleMoves;
         }
 
-        public List<Move> GetPossibleCaptureMovesForPositionAndDirection(Move currentMove, Game.Player activePlayer, bool king, Position currentPosition, int directionNumber, int directionCharacter)
+        public List<Move> GetPossibleCaptureMovesForPositionAndDirection(Move currentMove, bool king, Position currentPosition, int directionNumber, int directionCharacter)
         {
             List<Move> possibleMoves = new List<Move>();
+            Game.Player activePlayer = gameboard.CurrentPlayer;
 
             if (!king)
             {
@@ -226,7 +234,7 @@ namespace Hexdame
                     (activePlayer == Game.Player.Red && possibleOpponentCell.ContainsWhite)) &&
                     possibleMoveCell.IsEmpty)
                 {
-                    possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(currentMove, activePlayer, king, possibleMovePosition));
+                    possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(currentMove, king, possibleMovePosition));
                 }
             }
             else
@@ -258,7 +266,7 @@ namespace Hexdame
 
                     while (gameboard.ValidCell(possibleMovePosition) && gameboard.GetCell(possibleMovePosition).IsEmpty)
                     {
-                        possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(currentMove, activePlayer, king, possibleMovePosition));
+                        possibleMoves.AddRange(GetPossibleCaptureMovesForPosition(currentMove, king, possibleMovePosition));
 
                         possibleMovePosition = new Position(possibleMovePosition.Number + directionNumber, possibleMovePosition.Character + directionCharacter);
                     }
@@ -342,7 +350,7 @@ namespace Hexdame
             }
         }
 
-        public Position? CheckForCapture(Game.Player activePlayer, Position start, Position end)
+        public Position? CheckForCapture(Position start, Position end)
         {
             int deltaNumber = end.Number - start.Number;
             int deltaCharacter = end.Character - start.Character;
@@ -360,8 +368,8 @@ namespace Hexdame
             while (newPosition != end)
             {
                 // If there is a man between the two positions, the move captures a man
-                if ((gameboard.GetCell(newPosition).ContainsWhite && activePlayer == Game.Player.Red)
-                    || (gameboard.GetCell(newPosition).ContainsRed && activePlayer == Game.Player.White))
+                if ((gameboard.GetCell(newPosition).ContainsWhite && gameboard.CurrentPlayer == Game.Player.Red)
+                    || (gameboard.GetCell(newPosition).ContainsRed && gameboard.CurrentPlayer == Game.Player.White))
                 {
                     return newPosition;
                 }
@@ -369,6 +377,11 @@ namespace Hexdame
                 newPosition = new Position(newPosition.Number + moveDirectionNumber, newPosition.Character + moveDirectionCharacter);
             }
             return null;
+        }
+
+        public Game.Player GetNextPlayer(Game.Player currentPlayer)
+        {
+            return (Game.Player)(1 - (int)currentPlayer);
         }
     }
 }

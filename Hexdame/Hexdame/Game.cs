@@ -17,7 +17,6 @@ namespace Hexdame
         private Timer timerNextMove;
 
         private AbstractPlayer[] players;
-        Player activePlayer;
 
         public const int NUMBER_OF_PLAYERS = 2;
         public enum Player { White = 0, Red = 1 }
@@ -43,13 +42,11 @@ namespace Hexdame
         {
             gameboard.Reset();
 
-            players[(int)Player.White] = new MediumMinimaxPlayer(Player.White);
-            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 6);
+            players[(int)Player.White] = new AlphaBetaTTPlayer(Player.White, 4);
+            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 4);
 
             //Console.WriteLine(gameboard);
             guiController.UpdateGui(gameboard);
-
-            activePlayer = Player.Red;// Will be switched before first move
 
             timerNextMove.Stop();
             timerNextMove.Start();
@@ -57,7 +54,8 @@ namespace Hexdame
 
         public bool SendMove(Move move)
         {
-            bool success = gameLogic.ApplyMove(activePlayer, move);
+            Player activePlayer = gameboard.CurrentPlayer;
+            bool success = gameLogic.ApplyMove(move);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 
@@ -80,8 +78,7 @@ namespace Hexdame
 
         public void NextMove()
         {
-            SwitchActivePlayer();
-
+            Game.Player activePlayer = gameboard.CurrentPlayer;
             guiController.UpdateActivePlayer(activePlayer);
 
             if(players[(int)activePlayer] is AbstractComputerPlayer)
@@ -94,11 +91,6 @@ namespace Hexdame
             {
                 guiController.GuiInputAllowed = true;
             }
-        }
-
-        public void SwitchActivePlayer()
-        {
-            activePlayer = (Player)(((int)activePlayer + 1) % NUMBER_OF_PLAYERS);
         }
     }
 }

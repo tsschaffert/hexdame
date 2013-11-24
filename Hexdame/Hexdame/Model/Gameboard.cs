@@ -9,9 +9,17 @@ namespace Hexdame
     public class Gameboard : ICloneable
     {
         private Cell[][] gameboard;
+        private Game.Player currentPlayer;
         public const int FIELD_SIZE = 9;
 
-        private static int[,] zobristRandomValues;
+        private static int[,] zobristRandomPositionValues;
+        private static int[] zobristRandomPlayerValues;
+
+        public Game.Player CurrentPlayer 
+        { 
+            set { currentPlayer = value; } 
+            get { return currentPlayer; } 
+        }
 
         static Gameboard()
         {
@@ -87,6 +95,8 @@ namespace Hexdame
                     }
                 }
             }
+
+            CurrentPlayer = Game.Player.White;
         }
 
         public override string ToString()
@@ -146,6 +156,7 @@ namespace Hexdame
                     ret.gameboard[i][j] = (Cell)this.gameboard[i][j].Clone();
                 }
             }
+            ret.CurrentPlayer = CurrentPlayer;
 
             return ret;
         }
@@ -153,14 +164,19 @@ namespace Hexdame
         private static void InitialiseZobristValues()
         {
             Random random = new Random();
-            zobristRandomValues = new int[FIELD_SIZE*FIELD_SIZE,6];
-            for (int i = 0; i < zobristRandomValues.GetLength(0); i++)
+
+            zobristRandomPositionValues = new int[FIELD_SIZE*FIELD_SIZE,6];
+            for (int i = 0; i < zobristRandomPositionValues.GetLength(0); i++)
             {
-                for (int j = 0; j < zobristRandomValues.GetLength(1); j++)
+                for (int j = 0; j < zobristRandomPositionValues.GetLength(1); j++)
                 {
-                    zobristRandomValues[i,j] = random.Next();
+                    zobristRandomPositionValues[i,j] = random.Next();
                 }
             }
+
+            zobristRandomPlayerValues = new int[2];
+            zobristRandomPlayerValues[(int)Game.Player.White] = random.Next();
+            zobristRandomPlayerValues[(int)Game.Player.Red] = random.Next();
         }
 
         public int GetZobristHash()
@@ -170,9 +186,10 @@ namespace Hexdame
             {
                 for (int j = 0; j < gameboard[i].Length; j++)
                 {
-                    hash ^= Gameboard.zobristRandomValues[i * FIELD_SIZE + j, (int)gameboard[i][j].Content];
+                    hash ^= Gameboard.zobristRandomPositionValues[i * FIELD_SIZE + j, (int)gameboard[i][j].Content];
                 }
             }
+            hash ^= Gameboard.zobristRandomPlayerValues[(int)CurrentPlayer];
             return hash;
         }
 
@@ -191,7 +208,7 @@ namespace Hexdame
                         }
                     }
                 }
-                return true;
+                return this.CurrentPlayer==other.CurrentPlayer;
             }
             return false;
         }

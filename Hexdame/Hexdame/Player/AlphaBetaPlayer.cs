@@ -23,13 +23,13 @@ namespace Hexdame.Player
             Move bestMove = null;
             int bestValue = int.MinValue;
 
-            var possibleMoves = gameLogic.GetPossibleMoves(playerType);
+            var possibleMoves = gameLogic.GetPossibleMoves();
 
             foreach (Move move in possibleMoves)
             {
                 Gameboard newState = (Gameboard)gameboard.Clone();
                 GameLogic newLogic = new GameLogic(newState);
-                newLogic.ApplyMove(playerType, move);
+                newLogic.ApplyMove(move);
 
                 int score = -AlphaBeta(newState, depth - 1, GameLogic.LOSS_VALUE, GameLogic.WIN_VALUE, false);
 
@@ -46,21 +46,20 @@ namespace Hexdame.Player
         public int AlphaBeta(Gameboard state, int depth, int alpha, int beta, bool myMove)
         {
             GameLogic gameLogic = new GameLogic(state);
-            Game.Player activePlayer = myMove ? playerType : (Game.Player)(1 - (int)playerType); // TODO
 
             if (depth <= 0 || gameLogic.IsFinished())
             {
-                return myMove?Evaluate(state, activePlayer):-Evaluate(state, activePlayer);
+                return myMove?Evaluate(state):-Evaluate(state);
             }
 
             int score = int.MinValue;
-            var possibleMoves = gameLogic.GetPossibleMoves(activePlayer);
+            var possibleMoves = gameLogic.GetPossibleMoves();
 
             foreach (Move move in possibleMoves)
             {
                 Gameboard newState = (Gameboard)state.Clone();
                 GameLogic newLogic = new GameLogic(newState);
-                newLogic.ApplyMove(activePlayer, move);
+                newLogic.ApplyMove(move);
 
                 int value = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
                 if (value > score)
@@ -80,7 +79,7 @@ namespace Hexdame.Player
             return score;
         }
 
-        public int Evaluate(Gameboard state, Game.Player activePlayer)
+        public int Evaluate(Gameboard state)
         {
             int value = 0;
 
@@ -88,7 +87,7 @@ namespace Hexdame.Player
             int valuePieces = EvaluatePieces(state);
 
             value += valuePieces;
-            value += random.Next(-9, 10);
+            value += random.Next(-999, 1000);
 
             return value;
         }
@@ -136,7 +135,7 @@ namespace Hexdame.Player
                 }
             }
             // Calculate value for player White
-            int valuePieces = whiteKings * 15 + whiteMen * 10 - redKings * 15 - redMen * 10;
+            int valuePieces = whiteKings * 1500 + whiteMen * 1000 - redKings * 1500 - redMen * 1000;
             // If red, negate
             if (playerType == Game.Player.Red)
             {
