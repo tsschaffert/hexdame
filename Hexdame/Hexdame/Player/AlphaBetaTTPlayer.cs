@@ -48,10 +48,11 @@ namespace Hexdame.Player
 
         public int AlphaBeta(Gameboard state, int depth, int alpha, int beta, bool myMove)
         {
-            Transposition transposition = null;
-            if(transpositionTable.ContainsKey(state.GetZobristHash()))
+            Int64 zHash = state.GetZobristHash();
+            if(transpositionTable.ContainsKey(zHash))
             {
-                transposition = transpositionTable[state.GetZobristHash()];
+                Transposition transposition = transpositionTable[zHash];
+
                 if(transposition.Lowerbound >= beta)
                 {
                     return transposition.Lowerbound;
@@ -100,26 +101,28 @@ namespace Hexdame.Player
 
             if (score <= alpha)
             {
-                if (transposition == null)
+                if (!transpositionTable.ContainsKey(zHash))
                 {
-                    transposition = new Transposition(alpha, score, depth);
+                    Transposition transposition = new Transposition(alpha, score, depth);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
                 {
+                    Transposition transposition = transpositionTable[zHash];
                     transposition.Upperbound = score;
                     transposition.Depth = depth;
                 }
             }
             else if (score > alpha && score < beta)
             {
-                if (transposition == null)
+                if (!transpositionTable.ContainsKey(zHash))
                 {
-                    transposition = new Transposition(score, score, depth);
+                    Transposition transposition = new Transposition(score, score, depth);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
                 {
+                    Transposition transposition = transpositionTable[zHash];
                     transposition.Lowerbound = score;
                     transposition.Upperbound = score;
                     transposition.Depth = depth;
@@ -127,13 +130,14 @@ namespace Hexdame.Player
             }
             else if (score >= beta)
             {
-                if (transposition == null)
+                if (!transpositionTable.ContainsKey(zHash))
                 {
-                    transposition = new Transposition(score, beta, depth);
+                    Transposition transposition = new Transposition(score, beta, depth);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
                 {
+                    Transposition transposition = transpositionTable[zHash];
                     transposition.Lowerbound = score;
                     transposition.Depth = depth;
                 }

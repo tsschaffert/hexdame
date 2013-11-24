@@ -12,8 +12,8 @@ namespace Hexdame
         private Game.Player currentPlayer;
         public const int FIELD_SIZE = 9;
 
-        private static int[,] zobristRandomPositionValues;
-        private static int[] zobristRandomPlayerValues;
+        private static Int64[,] zobristRandomPositionValues;
+        private static Int64[] zobristRandomPlayerValues;
 
         public Game.Player CurrentPlayer 
         { 
@@ -165,23 +165,32 @@ namespace Hexdame
         {
             Random random = new Random();
 
-            zobristRandomPositionValues = new int[FIELD_SIZE*FIELD_SIZE,6];
+            zobristRandomPositionValues = new Int64[FIELD_SIZE*FIELD_SIZE,6];
             for (int i = 0; i < zobristRandomPositionValues.GetLength(0); i++)
             {
                 for (int j = 0; j < zobristRandomPositionValues.GetLength(1); j++)
                 {
-                    zobristRandomPositionValues[i,j] = random.Next();
+                    zobristRandomPositionValues[i, j] = GenerateRandomLong(random);
                 }
             }
 
-            zobristRandomPlayerValues = new int[2];
-            zobristRandomPlayerValues[(int)Game.Player.White] = random.Next();
-            zobristRandomPlayerValues[(int)Game.Player.Red] = random.Next();
+            zobristRandomPlayerValues = new Int64[2];
+            zobristRandomPlayerValues[(int)Game.Player.White] = GenerateRandomLong(random);
+            zobristRandomPlayerValues[(int)Game.Player.Red] = GenerateRandomLong(random);
         }
 
-        public int GetZobristHash()
+        private static Int64 GenerateRandomLong(Random rand)
         {
-            int hash = 0;
+            byte[] buffer = new byte[8];
+            rand.NextBytes(buffer);
+            Int64 randLong = BitConverter.ToInt64(buffer, 0);
+
+            return randLong;
+        }
+
+        public Int64 GetZobristHash()
+        {
+            Int64 hash = 0;
             for (int i = 0; i < gameboard.Length; i++)
             {
                 for (int j = 0; j < gameboard[i].Length; j++)
@@ -215,7 +224,7 @@ namespace Hexdame
 
         public override int GetHashCode()
         {
-            return GetZobristHash();
+            return (int)GetZobristHash();
         }
     }
 }
