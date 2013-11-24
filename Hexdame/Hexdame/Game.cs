@@ -42,7 +42,7 @@ namespace Hexdame
         {
             gameboard.Reset();
 
-            players[(int)Player.White] = new RandomPlayer(Player.White);
+            players[(int)Player.White] = new AlphaBetaPlayer(Player.White, 4);
             players[(int)Player.Red] = new AlphaBetaTTPlayer(Player.Red, 6);
 
             //Console.WriteLine(gameboard);

@@ -49,20 +49,34 @@ namespace Hexdame.Player
         public int AlphaBeta(Gameboard state, int depth, int alpha, int beta, bool myMove)
         {
             Int64 zHash = state.GetZobristHash();
+            bool moveOrdering = false;
             if(transpositionTable.ContainsKey(zHash))
             {
                 Transposition transposition = transpositionTable[zHash];
 
-                if(transposition.Lowerbound >= beta)
+                if (transposition.Depth >= depth)
                 {
-                    return transposition.Lowerbound;
+                    // TODO possible to just return exact value?
+                    if (transposition.Lowerbound == transposition.Upperbound)
+                    {
+                        return transposition.Lowerbound;
+                    }
+
+                    if (transposition.Lowerbound >= beta)
+                    {
+                        return transposition.Lowerbound;
+                    }
+                    if (transposition.Upperbound <= alpha)
+                    {
+                        return transposition.Upperbound;
+                    }
+                    alpha = Math.Max(alpha, transposition.Lowerbound);
+                    beta = Math.Min(beta, transposition.Upperbound);
                 }
-                if(transposition.Upperbound <= alpha)
+                else if (transposition.Depth >= 1)
                 {
-                    return transposition.Upperbound;
+                    moveOrdering = true;
                 }
-                alpha = Math.Max(alpha, transposition.Lowerbound);
-                beta = Math.Min(beta, transposition.Upperbound);
             }
 
             GameLogic gameLogic = new GameLogic(state);
@@ -76,6 +90,12 @@ namespace Hexdame.Player
             {
                 score = int.MinValue;
                 var possibleMoves = gameLogic.GetPossibleMoves();
+
+                // TODO move ordering
+                if (moveOrdering)
+                {
+                    OrderMoves(possibleMoves, state);
+                }
 
                 foreach (Move move in possibleMoves)
                 {
@@ -103,7 +123,7 @@ namespace Hexdame.Player
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(alpha, score, depth);
+                    Transposition transposition = new Transposition(alpha, score, depth, null);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -117,7 +137,7 @@ namespace Hexdame.Player
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(score, score, depth);
+                    Transposition transposition = new Transposition(score, score, depth, null);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -132,7 +152,7 @@ namespace Hexdame.Player
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(score, beta, depth);
+                    Transposition transposition = new Transposition(score, beta, depth, null);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -157,6 +177,62 @@ namespace Hexdame.Player
             value += random.Next(-999, 1000);
 
             return value;
+        }
+
+        public void OrderMoves(List<Move> moves, Gameboard state)
+        {
+            moves.Sort(new MoveComparer(state, transpositionTable));
+        }
+
+        public class MoveComparer : IComparer<Move>
+        {
+            private Gameboard state;
+            private LimitedSizeDictionary<Int64, Transposition> transpositionTable;
+
+            public MoveComparer(Gameboard state, LimitedSizeDictionary<Int64, Transposition> transpositionTable)
+            {
+                this.state = state;
+                this.transpositionTable = transpositionTable;
+            }
+
+            public int Compare(Move x, Move y)
+            {
+                Gameboard newStateX = (Gameboard)state.Clone();
+                GameLogic newLogicX = new GameLogic(newStateX);
+                newLogicX.ApplyMove(x);
+
+                Gameboard newStateY = (Gameboard)state.Clone();
+                GameLogic newLogicY = new GameLogic(newStateY);
+                newLogicY.ApplyMove(y);
+
+                Int64 zHashX = newStateX.GetZobristHash();
+                Int64 zHashY = newStateY.GetZobristHash();
+
+                if(!transpositionTable.ContainsKey(zHashX) || !transpositionTable.ContainsKey(zHashY))
+                {
+                    return 0;
+                }
+                else
+                {
+                    Transposition tX = transpositionTable[zHashX];
+                    Transposition tY = transpositionTable[zHashY];
+
+                    if(tX.Lowerbound == tX.Upperbound && tY.Lowerbound == tY.Upperbound)
+                    {
+                        return tX.Lowerbound - tY.Lowerbound;
+                    }
+                    else if(tX.Lowerbound >= tY.Upperbound)
+                    {
+                        return 1;
+                    }
+                    else if(tY.Lowerbound >= tX.Upperbound)
+                    {
+                        return -1;
+                    }
+
+                    return 0;
+                }
+            }
         }
 
         public int EvaluatePieces(Gameboard state)
