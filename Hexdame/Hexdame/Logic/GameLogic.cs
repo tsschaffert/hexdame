@@ -86,6 +86,25 @@ namespace Hexdame
 
         public List<Move> GetPossibleMoves()
         {
+            List<Move> possibleMoves = GetPossibleWithoutLookingAtMaxCaptures();
+
+            // Get max number of captures
+            int maxCaptures = 0;
+            foreach (Move move in possibleMoves)
+            {
+                int captures = NumberOfCaptures(move);
+                if (captures > maxCaptures)
+                {
+                    maxCaptures = captures;
+                }
+            }
+
+            // Filter invalid moves
+            return new List<Move>(possibleMoves.Where(move => NumberOfCaptures(move) == maxCaptures));
+        }
+
+        public List<Move> GetPossibleWithoutLookingAtMaxCaptures()
+        {
             List<Move> possibleMoves = new List<Move>();
             Game.Player activePlayer = gameboard.CurrentPlayer;
 
@@ -110,19 +129,7 @@ namespace Hexdame
                 }
             }
 
-            // Get max number of captures
-            int maxCaptures = 0;
-            foreach (Move move in possibleMoves)
-            {
-                int captures = NumberOfCaptures(move);
-                if (captures > maxCaptures)
-                {
-                    maxCaptures = captures;
-                }
-            }
-
-            // Filter invalid moves
-            return new List<Move>(possibleMoves.Where(move => NumberOfCaptures(move) == maxCaptures));
+            return possibleMoves;
         }
 
         public List<Move> GetPossibleMovesForPosition(bool king, Position currentPosition)

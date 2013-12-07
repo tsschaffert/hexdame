@@ -117,5 +117,10 @@ namespace Hexdame
             labelCurrentPlayer.Text = "Player " + activePlayer.ToString() + "'s turn.";
             labelCurrentPlayer.ForeColor = activePlayer == Game.Player.White ? Color.White : Color.Red;
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            controller.UndoLastMove();
+        }
     }
 }

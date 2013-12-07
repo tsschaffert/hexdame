@@ -21,10 +21,13 @@ namespace Hexdame
         public const int NUMBER_OF_PLAYERS = 2;
         public enum Player { White = 0, Red = 1 }
 
+        private Stack<Gameboard> gameHistory;
+
         public Game(GuiController guiController)
         {
             gameboard = new Gameboard();
             gameLogic = new GameLogic(gameboard);
+            gameHistory = new Stack<Gameboard>();
             this.guiController = guiController;
             players = new AbstractPlayer[NUMBER_OF_PLAYERS];
             timerNextMove = new Timer(500);
@@ -42,14 +45,30 @@ namespace Hexdame
         {
             gameboard.Reset();
 
-            players[(int)Player.White] = new AlphaBetaPlayer(Player.White, 4);
-            players[(int)Player.Red] = new RandomPlayer(Player.Red);
+            gameHistory.Clear();
+            gameHistory.Push((Gameboard)gameboard.Clone());
 
-            //Console.WriteLine(gameboard);
-            guiController.UpdateGui(gameboard);
+            players[(int)Player.White] = new AlphaBetaPlayer(Player.White, 4);
+            players[(int)Player.Red] = new AlphaBetaIDPlayer(Player.Red, 4);
+
+            guiController.UpdateGui((Gameboard)gameboard.Clone());
 
             timerNextMove.Stop();
             timerNextMove.Start();
+        }
+
+        public void UndoLastMove()
+        {
+            if(gameHistory.Count > 0)
+            {
+                gameboard = gameHistory.Pop();
+                gameLogic = new GameLogic(gameboard);
+
+                guiController.UpdateGui((Gameboard)gameboard.Clone());
+
+                timerNextMove.Stop();
+                timerNextMove.Start();
+            }
         }
 
         public bool SendMove(Move move)
@@ -62,6 +81,7 @@ namespace Hexdame
             if (success)
             {
                 guiController.AddMessage("Player " + activePlayer.ToString() + " made a move: " + move);
+                gameHistory.Push((Gameboard)gameboard.Clone());
 
                 if (!gameLogic.IsFinished())
                 {
