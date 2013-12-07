@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Hexdame.Player;
 using System.Timers;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace Hexdame
 {
@@ -22,6 +25,8 @@ namespace Hexdame
         public enum Player { White = 0, Red = 1 }
 
         private Stack<Gameboard> gameHistory;
+
+        private bool firstGame = true;
 
         public Game(GuiController guiController)
         {
@@ -44,6 +49,12 @@ namespace Hexdame
         public void NewGame()
         {
             gameboard.Reset();
+
+            if (firstGame)
+            {
+                firstGame = false;
+                LoadState();
+            }
 
             gameHistory.Clear();
             gameHistory.Push((Gameboard)gameboard.Clone());
@@ -81,7 +92,10 @@ namespace Hexdame
             if (success)
             {
                 guiController.AddMessage("Player " + activePlayer.ToString() + " made a move: " + move);
+
+                // Save current state
                 gameHistory.Push((Gameboard)gameboard.Clone());
+                SaveState();
 
                 if (!gameLogic.IsFinished())
                 {
@@ -90,6 +104,7 @@ namespace Hexdame
                 else
                 {
                     // Spiel zu Ende
+                    ClearState();
                 }
             }
 
@@ -110,6 +125,51 @@ namespace Hexdame
             else if (players[(int)activePlayer] is AbstractHumanPlayer)
             {
                 guiController.GuiInputAllowed = true;
+            }
+        }
+
+        private void LoadState()
+        {
+            try
+            {
+                using (Stream stream = new FileStream("last_state.xml", FileMode.Open))
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    gameboard = (Gameboard)bf.Deserialize(stream);
+                    gameLogic = new GameLogic(gameboard);
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+
+        private void SaveState()
+        {
+            try
+            {
+                using (Stream stream = new FileStream("last_state.xml", FileMode.Create))
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    bf.Serialize(stream, gameboard);
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+
+        private void ClearState()
+        {
+            try
+            {
+                File.Delete("last_state.xml");
+            }
+            catch(Exception e)
+            {
+
             }
         }
     }

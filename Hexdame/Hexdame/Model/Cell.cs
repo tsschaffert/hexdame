@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
+    [Serializable()]  
     public class Cell : ICloneable
     {
         public enum Occupancy { Empty = 0, White = 2, WhiteKing = 3, Red = 4, RedKing = 5 };

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Hexdame
 {
-    public class Gameboard : ICloneable
+    [Serializable()]  
+    public class Gameboard : ICloneable, ISerializable
     {
         private Cell[][] gameboard;
         private Game.Player currentPlayer;
@@ -41,6 +43,12 @@ namespace Hexdame
             }
 
             Reset();
+        }
+
+        public Gameboard(SerializationInfo info, StreamingContext ctxt)
+        {
+            currentPlayer = (Game.Player)info.GetValue("CurrentPlayer", typeof(Game.Player));
+            gameboard = (Cell[][])info.GetValue("Gameboard", typeof(Cell[][]));
         }
 
         public Cell GetCell(Position position)
@@ -225,6 +233,12 @@ namespace Hexdame
         public override int GetHashCode()
         {
             return (int)GetZobristHash();
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("CurrentPlayer", currentPlayer, typeof(Game.Player));
+            info.AddValue("Gameboard", gameboard, typeof(Cell[][]));
         }
     }
 }
