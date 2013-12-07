@@ -9,6 +9,7 @@ namespace Hexdame
     public class Move : ICloneable
     {
         private List<Position> positions;
+        public int Value;
 
         public Move(params Position[] positions)
         {

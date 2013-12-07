@@ -181,58 +181,29 @@ namespace Hexdame.Player
 
         public void OrderMoves(List<Move> moves, Gameboard state)
         {
-            moves.Sort(new MoveComparer(state, transpositionTable));
+            // Assign values to moves, if possible
+            for (int i = 0; i < moves.Count; i++)
+            {
+                Gameboard newState = (Gameboard)state.Clone();
+                GameLogic newLogic = new GameLogic(newState);
+                newLogic.ApplyMove(moves[i]);
+
+                Int64 zHash = newState.GetZobristHash();
+                if(transpositionTable.ContainsKey(zHash))
+                {
+                    Transposition transposition = transpositionTable[zHash];
+                    if (transposition.Lowerbound == transposition.Upperbound)
+                    {
+                        moves[i].Value = transposition.Lowerbound;
+                    }
+                }
+            }
+            moves.Sort(MoveComparison);
         }
 
-        public class MoveComparer : IComparer<Move>
+        public static int MoveComparison(Move m1, Move m2)
         {
-            private Gameboard state;
-            private LimitedSizeDictionary<Int64, Transposition> transpositionTable;
-
-            public MoveComparer(Gameboard state, LimitedSizeDictionary<Int64, Transposition> transpositionTable)
-            {
-                this.state = state;
-                this.transpositionTable = transpositionTable;
-            }
-
-            public int Compare(Move x, Move y)
-            {
-                Gameboard newStateX = (Gameboard)state.Clone();
-                GameLogic newLogicX = new GameLogic(newStateX);
-                newLogicX.ApplyMove(x);
-
-                Gameboard newStateY = (Gameboard)state.Clone();
-                GameLogic newLogicY = new GameLogic(newStateY);
-                newLogicY.ApplyMove(y);
-
-                Int64 zHashX = newStateX.GetZobristHash();
-                Int64 zHashY = newStateY.GetZobristHash();
-
-                if(!transpositionTable.ContainsKey(zHashX) || !transpositionTable.ContainsKey(zHashY))
-                {
-                    return 0;
-                }
-                else
-                {
-                    Transposition tX = transpositionTable[zHashX];
-                    Transposition tY = transpositionTable[zHashY];
-
-                    if(tX.Lowerbound == tX.Upperbound && tY.Lowerbound == tY.Upperbound)
-                    {
-                        return tX.Lowerbound - tY.Lowerbound;
-                    }
-                    else if(tX.Lowerbound >= tY.Upperbound)
-                    {
-                        return 1;
-                    }
-                    else if(tY.Lowerbound >= tX.Upperbound)
-                    {
-                        return -1;
-                    }
-
-                    return 0;
-                }
-            }
+            return m1.Value - m2.Value;
         }
 
         public int EvaluatePieces(Gameboard state)
