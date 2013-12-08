@@ -22,6 +22,15 @@ namespace Hexdame.Player
             this.playerType = playerType;
         }
 
+        public Evaluation(Game.Player playerType, int weightMan, int weightKing, int weightMovement, int maxRandom)
+            : this(playerType)
+        {
+            this.weightMan = weightMan;
+            this.weightKing = weightKing;
+            this.weightMovement = weightMovement;
+            this.maxRandom = maxRandom;
+        }
+
         public int Evaluate(Gameboard state)
         {
             int value = 0;

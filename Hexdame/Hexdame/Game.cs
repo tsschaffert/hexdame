@@ -22,6 +22,7 @@ namespace Hexdame
         private AbstractPlayer[] players;
 
         public const int NUMBER_OF_PLAYERS = 2;
+        public const int PAUSE_BETWEEN_MOVES = 500;
         public enum Player { White = 0, Red = 1 }
 
         private Stack<Gameboard> gameHistory;
@@ -35,8 +36,9 @@ namespace Hexdame
             gameHistory = new Stack<Gameboard>();
             this.guiController = guiController;
             players = new AbstractPlayer[NUMBER_OF_PLAYERS];
-            timerNextMove = new Timer(500);
+            timerNextMove = new Timer(PAUSE_BETWEEN_MOVES);
             timerNextMove.Elapsed += timerNextMove_Elapsed;
+            timerNextMove.AutoReset = false;
             NewGame();
         }
 

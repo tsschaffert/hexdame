@@ -19,6 +19,14 @@ namespace Hexdame.Player
             evaluation = new Evaluation(playerType);
         }
 
+        public AlphaBetaPlayer(Game.Player playerType, int depth, Evaluation evaluation)
+            : base(playerType)
+        {
+            this.depth = depth;
+            random = new Random();
+            this.evaluation = evaluation;
+        }
+
         public override Move GetMove(Gameboard gameboard)
         {
             GameLogic gameLogic = new GameLogic(gameboard);
@@ -26,6 +34,12 @@ namespace Hexdame.Player
             int bestValue = int.MinValue;
 
             var possibleMoves = gameLogic.GetPossibleMoves();
+
+            // Don't search if only one move possible
+            if(possibleMoves.Count == 1)
+            {
+                return possibleMoves[0];
+            }
 
             foreach (Move move in possibleMoves)
             {
