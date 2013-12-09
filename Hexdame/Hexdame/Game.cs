@@ -22,7 +22,7 @@ namespace Hexdame
         private AbstractPlayer[] players;
 
         public const int NUMBER_OF_PLAYERS = 2;
-        public const int PAUSE_BETWEEN_MOVES = 500;
+        public const int PAUSE_BETWEEN_MOVES = 1;
         public enum Player { White = 0, Red = 1 }
 
         private Stack<Gameboard> gameHistory;
@@ -61,8 +61,8 @@ namespace Hexdame
             gameHistory.Clear();
             gameHistory.Push((Gameboard)gameboard.Clone());
 
-            players[(int)Player.White] = new AlphaBetaPlayer(Player.White, 4);
-            players[(int)Player.Red] = new AlphaBetaIDPlayer(Player.Red, 4);
+            players[(int)Player.White] = new AlphaBetaTTPlayer(Player.White, 4);
+            players[(int)Player.Red] = new RandomPlayer(Player.Red);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 

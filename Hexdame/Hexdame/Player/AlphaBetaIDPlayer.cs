@@ -13,6 +13,10 @@ namespace Hexdame.Player
         protected LimitedSizeDictionary<Int64, Transposition> transpositionTable;
         protected Evaluation evaluation;
 
+        // DEBUG
+        private int iterationCounter;
+        private int n;
+
         public AlphaBetaIDPlayer(Game.Player playerType, int depth)
             : base(playerType)
         {
@@ -25,18 +29,32 @@ namespace Hexdame.Player
         public override Move GetMove(Gameboard gameboard)
         {
             GameLogic gameLogic = new GameLogic(gameboard);
-            Move bestMove = null;
+            List<Move> bestMove = new List<Move>();
             int bestValue = int.MinValue;
 
             var possibleMoves = gameLogic.GetPossibleMoves();
 
+            // Don't search if only one move possible
+            if (possibleMoves.Count == 1)
+            {
+                return possibleMoves[0];
+            }
+
             for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
             {
-                Move currentBestMove = null;
+                List<Move> currentBestMove = new List<Move>();
                 int currentBestValue = int.MinValue;
+
+                if(currentDepth > 1)
+                {
+                    OrderMoves(possibleMoves, gameboard);
+                }
 
                 foreach (Move move in possibleMoves)
                 {
+                    // DEBUG
+                    iterationCounter++;
+
                     Gameboard newState = (Gameboard)gameboard.Clone();
                     GameLogic newLogic = new GameLogic(newState);
                     newLogic.ApplyMove(move);
@@ -45,23 +63,44 @@ namespace Hexdame.Player
 
                     if (score > currentBestValue)
                     {
-                        currentBestMove = move;
+                        currentBestMove.Clear();
+                        currentBestMove.Add(move);
                         currentBestValue = score;
+                    }
+                    else if(score == currentBestValue)
+                    {
+                        currentBestMove.Add(move);
                     }
                 }
 
                 if (currentBestValue > bestValue)
                 {
                     bestValue = currentBestValue;
-                    bestMove = currentBestMove;
+                    bestMove.Clear();
+                    bestMove.AddRange(currentBestMove);
+                }
+                else if(currentBestValue == bestValue)
+                {
+                    bestMove.AddRange(currentBestMove);
                 }
             }
 
-            return bestMove;
+            // DEBUG
+            n++;
+            Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
+
+            // DEBUG
+            transpositionTable.Clear();
+
+            // Return one of the best moves
+            return bestMove[random.Next(bestMove.Count)];
         }
 
         public int AlphaBeta(Gameboard state, int depth, int alpha, int beta, bool myMove)
         {
+            // DEBUG
+            iterationCounter++;
+
             Int64 zHash = state.GetZobristHash();
             if (transpositionTable.ContainsKey(zHash))
             {
@@ -100,7 +139,10 @@ namespace Hexdame.Player
                 score = int.MinValue;
                 var possibleMoves = gameLogic.GetPossibleMoves();
 
-                OrderMoves(possibleMoves, state);
+                if (depth > 1)
+                {
+                    OrderMoves(possibleMoves, state);
+                }
 
                 foreach (Move move in possibleMoves)
                 {
@@ -195,7 +237,8 @@ namespace Hexdame.Player
 
         public static int MoveComparison(Move m1, Move m2)
         {
-            return m1.Value - m2.Value;
+            // TODO maybe negate?
+            return m1.Value.CompareTo(m2.Value);
         }
     }
 }

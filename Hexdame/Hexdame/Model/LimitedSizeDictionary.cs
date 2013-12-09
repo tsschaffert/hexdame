@@ -24,8 +24,17 @@ namespace Hexdame.Model
                 this.Remove(keyQueue.Dequeue());
             }
 
-            keyQueue.Enqueue(key);
-            base.Add(key, value);
+            
+            try
+            {
+                keyQueue.Enqueue(key);
+
+                base.Add(key, value);
+            }
+            catch(ArgumentException e)
+            {
+
+            }
         }
     }
 }

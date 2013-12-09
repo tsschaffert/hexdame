@@ -13,6 +13,10 @@ namespace Hexdame.Player
         protected LimitedSizeDictionary<Int64, Transposition> transpositionTable;
         protected Evaluation evaluation;
 
+        // DEBUG
+        private int iterationCounter;
+        private int n;
+
         public AlphaBetaTTPlayer(Game.Player playerType, int depth)
             : base(playerType)
         {
@@ -25,13 +29,22 @@ namespace Hexdame.Player
         public override Move GetMove(Gameboard gameboard)
         {
             GameLogic gameLogic = new GameLogic(gameboard);
-            Move bestMove = null;
+            List<Move> bestMove = new List<Move>();
             int bestValue = int.MinValue;
 
             var possibleMoves = gameLogic.GetPossibleMoves();
 
+            // Don't search if only one move possible
+            if (possibleMoves.Count == 1)
+            {
+                return possibleMoves[0];
+            }
+
             foreach (Move move in possibleMoves)
             {
+                // DEBUG
+                iterationCounter++;
+
                 Gameboard newState = (Gameboard)gameboard.Clone();
                 GameLogic newLogic = new GameLogic(newState);
                 newLogic.ApplyMove(move);
@@ -40,16 +53,29 @@ namespace Hexdame.Player
 
                 if (score > bestValue)
                 {
-                    bestMove = move;
+                    bestMove.Clear();
+                    bestMove.Add(move);
                     bestValue = score;
+                }
+                else if (score == bestValue)
+                {
+                    bestMove.Add(move);
                 }
             }
 
-            return bestMove;
+            // DEBUG
+            n++;
+            Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter/n, n);
+
+            // Return one of the best moves
+            return bestMove[random.Next(bestMove.Count)];
         }
 
         public int AlphaBeta(Gameboard state, int depth, int alpha, int beta, bool myMove)
         {
+            // DEBUG
+            iterationCounter++;
+
             Int64 zHash = state.GetZobristHash();
             bool moveOrdering = false;
             if(transpositionTable.ContainsKey(zHash))
@@ -192,7 +218,8 @@ namespace Hexdame.Player
 
         public static int MoveComparison(Move m1, Move m2)
         {
-            return m1.Value - m2.Value;
+            // Maybe negate?
+            return m1.Value.CompareTo(m2.Value);
         }
     }
 }

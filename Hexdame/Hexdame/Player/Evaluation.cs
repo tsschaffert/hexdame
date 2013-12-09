@@ -46,9 +46,9 @@ namespace Hexdame.Player
             int valueMovement = EvaluateMovement(state);
 
             value += valuePieces;
-            value += valueMovement;
+            //value += valueMovement;
 
-            value += random.Next(-maxRandom, maxRandom+1);
+            //value += random.Next(-maxRandom, maxRandom+1);
 
             return value;
         }

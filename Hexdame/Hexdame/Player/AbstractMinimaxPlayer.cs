@@ -10,6 +10,10 @@ namespace Hexdame.Player
         protected Random random;
         protected readonly int depth;
 
+        // DEBUG
+        private int iterationCounter;
+        private int n;
+
         public AbstractMinimaxPlayer(Game.Player playerType, int depth)
             : base(playerType)
         {
@@ -20,13 +24,16 @@ namespace Hexdame.Player
         public override Move GetMove(Gameboard gameboard)
         {
             GameLogic gameLogic = new GameLogic(gameboard);
-            Move bestMove = null;
+            List<Move> bestMove = new List<Move>();
             int bestValue = int.MinValue;
 
             var possibleMoves = gameLogic.GetPossibleMoves();
 
             foreach (Move move in possibleMoves)
             {
+                // DEBUG
+                iterationCounter++;
+
                 Gameboard newState = (Gameboard)gameboard.Clone();
                 GameLogic newLogic = new GameLogic(newState);
                 newLogic.ApplyMove(move);
@@ -35,16 +42,29 @@ namespace Hexdame.Player
 
                 if (score > bestValue)
                 {
-                    bestMove = move;
+                    bestMove.Clear();
+                    bestMove.Add(move);
                     bestValue = score;
+                }
+                else if (score == bestValue)
+                {
+                    bestMove.Add(move);
                 }
             }
 
-            return bestMove;
+            // DEBUG
+            n++;
+            Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
+
+            // Return one of the best moves
+            return bestMove[random.Next(bestMove.Count)];
         }
 
         public int MiniMax(Gameboard state, int depth, bool max)
         {
+            // DEBUG
+            iterationCounter++;
+
             GameLogic gameLogic = new GameLogic(state);
 
             if (depth <= 0 || gameLogic.IsFinished())
