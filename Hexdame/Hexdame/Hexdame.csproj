@@ -62,6 +62,8 @@
     <Compile Include="Model\LimitedSizeDictionary.cs" />
     <Compile Include="Model\Transposition.cs" />
     <Compile Include="Player\AbstractMinimaxPlayer.cs" />
+    <Compile Include="Player\AlphaBetaMCPlayer.cs" />
+    <Compile Include="Player\AlphaBetaPVSPlayer.cs" />
     <Compile Include="Player\AlphaBetaPlayer.cs" />
     <Compile Include="Player\Evaluation.cs" />
     <Compile Include="Player\HumanPlayer.cs" />
@@ -74,6 +76,7 @@
     <Compile Include="Player\AlphaBetaIDPlayer.cs" />
     <Compile Include="Player\AlphaBetaParallelPlayer.cs" />
     <Compile Include="Player\MediumMinimaxPlayer.cs" />
+    <Compile Include="Player\EvaluationPlayer.cs" />
     <Compile Include="Player\SimpleMinimaxPlayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

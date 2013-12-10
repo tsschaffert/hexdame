@@ -37,6 +37,10 @@ namespace Hexdame.Player
             // Don't search if only one move possible
             if (possibleMoves.Count == 1)
             {
+                // DEBUG
+                n++;
+                Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
+
                 return possibleMoves[0];
             }
 
@@ -45,7 +49,7 @@ namespace Hexdame.Player
                 List<Move> currentBestMove = new List<Move>();
                 int currentBestValue = int.MinValue;
 
-                if(currentDepth > 1)
+                //if(currentDepth > 1)
                 {
                     OrderMoves(possibleMoves, gameboard);
                 }
@@ -90,7 +94,7 @@ namespace Hexdame.Player
             Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
 
             // DEBUG
-            transpositionTable.Clear();
+            //transpositionTable.Clear();
 
             // Return one of the best moves
             return bestMove[random.Next(bestMove.Count)];

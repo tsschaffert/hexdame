@@ -42,6 +42,10 @@ namespace Hexdame.Player
             // Don't search if only one move possible
             if(possibleMoves.Count == 1)
             {
+                // DEBUG
+                n++;
+                Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
+
                 return possibleMoves[0];
             }
 
