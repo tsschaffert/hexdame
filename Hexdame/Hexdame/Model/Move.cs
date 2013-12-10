@@ -37,6 +37,11 @@ namespace Hexdame
 
         public static bool operator ==(Move a, Move b)
         {
+            if (Object.ReferenceEquals(a, null) || Object.ReferenceEquals(b, null))
+            {
+                return false;
+            }
+
             if (a.positions.Count != b.positions.Count)
             {
                 return false;
@@ -60,7 +65,7 @@ namespace Hexdame
 
         public override bool Equals(object obj)
         {
-            if (obj is Move)
+            if (obj != null && obj is Move)
             {
                 Move m = (Move)obj;
                 return m == this;
