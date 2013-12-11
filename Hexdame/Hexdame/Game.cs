@@ -61,8 +61,8 @@ namespace Hexdame
             gameHistory.Clear();
             gameHistory.Push((Gameboard)gameboard.Clone());
 
-            players[(int)Player.White] = new AlphaBetaTTPlayer(Player.White, 5);
-            players[(int)Player.Red] = new RandomPlayer(Player.Red);
+            players[(int)Player.White] = new AlphaBetaQPlayer(Player.White, 3);
+            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 5);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 
