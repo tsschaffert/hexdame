@@ -7,14 +7,20 @@ namespace Hexdame.Player
 {
     class Evaluation
     {
-        protected int weightMan = 1000;
-        protected int weightKing = 1500;
-        protected int weightMovement = 100;
+        protected int weightMan = 10;
+        protected int weightKing = 15;
+        protected int weightMovement = 1;
 
-        protected int maxRandom = 999;
+        protected int maxRandom = 9;
 
         protected Random random;
         protected Game.Player playerType; 
+
+        public Game.Player PlayerType
+        {
+            set { playerType = value; }
+            get { return playerType; }
+        }
 
         public Evaluation(Game.Player playerType)
         {
@@ -121,6 +127,11 @@ namespace Hexdame.Player
             GameLogic gameLogic = new GameLogic(state);
 
             var possibleMoves = gameLogic.GetPossibleWithoutLookingAtMaxCaptures();
+
+            if(possibleMoves.Count == 0)
+            {
+                return 0;
+            }
 
             int piecesAbleToMove = 1;
 

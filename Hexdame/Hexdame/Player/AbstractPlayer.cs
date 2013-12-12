@@ -10,6 +10,11 @@ namespace Hexdame.Player
     {
         protected Game.Player playerType;
 
+        public virtual void ChangePlayerType(Game.Player playerType)
+        {
+            this.playerType = playerType;
+        }
+
         public AbstractPlayer(Game.Player playerType)
         {
             this.playerType = playerType;

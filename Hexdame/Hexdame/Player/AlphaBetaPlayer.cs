@@ -118,5 +118,12 @@ namespace Hexdame.Player
 
             return score;
         }
+
+        public override void ChangePlayerType(Game.Player playerType)
+        {
+            base.ChangePlayerType(playerType);
+
+            evaluation.PlayerType = playerType;
+        }
     }
 }

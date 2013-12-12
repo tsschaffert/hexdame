@@ -29,17 +29,28 @@ namespace Hexdame
 
         private bool firstGame = true;
 
+        private Evaluator evaluator;
+
         public Game(GuiController guiController)
         {
             gameboard = new Gameboard();
             gameLogic = new GameLogic(gameboard);
             gameHistory = new Stack<Gameboard>();
+
+            /*evaluator = new Evaluator(this,
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 10, 14, 0, 0)),
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 10, 14, 1, 0)),
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 10, 14, 5, 0))
+                );*/
+            evaluator = new Evaluator(this);
+
             this.guiController = guiController;
             players = new AbstractPlayer[NUMBER_OF_PLAYERS];
             timerNextMove = new Timer(PAUSE_BETWEEN_MOVES);
             timerNextMove.Elapsed += timerNextMove_Elapsed;
             timerNextMove.AutoReset = false;
             NewGame();
+            //evaluator.Start();
         }
 
         void timerNextMove_Elapsed(object sender, ElapsedEventArgs e)
@@ -61,8 +72,8 @@ namespace Hexdame
             gameHistory.Clear();
             gameHistory.Push((Gameboard)gameboard.Clone());
 
-            players[(int)Player.White] = new AlphaBetaQPlayer(Player.White, 3);
-            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 5);
+            players[(int)Player.White] = new AlphaBetaPlayer(Player.White, 1);
+            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 1);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 
@@ -89,11 +100,17 @@ namespace Hexdame
             Player activePlayer = gameboard.CurrentPlayer;
             bool success = gameLogic.ApplyMove(move);
 
-            guiController.UpdateGui((Gameboard)gameboard.Clone());
+            if (!evaluator.IsActive)
+            {
+                guiController.UpdateGui((Gameboard)gameboard.Clone());
+            }
 
             if (success)
             {
-                guiController.AddMessage("Player " + activePlayer.ToString() + " made a move: " + move);
+                if (!evaluator.IsActive)
+                {
+                    guiController.AddMessage("Player " + activePlayer.ToString() + " made a move: " + move);
+                }
 
                 // Save current state
                 gameHistory.Push((Gameboard)gameboard.Clone());
@@ -107,6 +124,11 @@ namespace Hexdame
                 {
                     // Spiel zu Ende
                     ClearState();
+
+                    if(evaluator.IsActive)
+                    {
+                        evaluator.Continue();
+                    }
                 }
             }
 
@@ -116,7 +138,11 @@ namespace Hexdame
         public void NextMove()
         {
             Game.Player activePlayer = gameboard.CurrentPlayer;
-            guiController.UpdateActivePlayer(activePlayer);
+
+            if (!evaluator.IsActive)
+            {
+                guiController.UpdateActivePlayer(activePlayer);
+            }
 
             if(players[(int)activePlayer] is AbstractComputerPlayer)
             {
@@ -132,6 +158,12 @@ namespace Hexdame
 
         private void LoadState()
         {
+            // Too many file accesses
+            if (evaluator.IsActive)
+            {
+                return;
+            }
+
             try
             {
                 using (Stream stream = new FileStream("last_state.xml", FileMode.Open))
@@ -149,6 +181,12 @@ namespace Hexdame
 
         private void SaveState()
         {
+            // Too many file accesses
+            if (evaluator.IsActive)
+            {
+                return;
+            }
+
             try
             {
                 using (Stream stream = new FileStream("last_state.xml", FileMode.Create))
@@ -165,6 +203,12 @@ namespace Hexdame
 
         private void ClearState()
         {
+            // Too many file accesses
+            if (evaluator.IsActive)
+            {
+                return;
+            }
+
             try
             {
                 File.Delete("last_state.xml");
@@ -172,6 +216,156 @@ namespace Hexdame
             catch(Exception e)
             {
 
+            }
+        }
+
+        private class Evaluator
+        {
+            private int[] wins;
+            private List<AbstractPlayer> playerList = new List<AbstractPlayer>();
+            public const int MAX_ITERATIONS = 50;
+            private bool active;
+            private Game game;
+
+            private int player1Index;
+            private int player2Index;
+            private int iteration;
+
+            private int roundCounter;
+
+            public bool IsActive
+            {
+                get { return active; }
+            }
+
+            public Evaluator(Game game, params AbstractPlayer[] players)
+            {
+                this.game = game;
+                if (players.Length < 2)
+                {
+                    active = false;
+                }
+                else
+                {
+                    wins = new int[players.Length];
+                    foreach (AbstractPlayer p in players)
+                    {
+                        playerList.Add(p);
+                    }
+                    active = true;
+                }
+            }
+
+            public void Start()
+            {
+                player1Index = 0;
+                player2Index = 1;
+                iteration = 0;
+
+                roundCounter = 0;
+
+                if(playerList.Count >= 2)
+                {
+                    active = true;
+                    wins = new int[playerList.Count];
+
+                    RestartGame();
+                }
+            }
+
+            private void RestartGame()
+            {
+                game.gameboard.Reset();
+
+                game.gameHistory.Clear();
+                game.gameHistory.Push((Gameboard)game.gameboard.Clone());
+
+                // Set player colours
+                playerList[player1Index].ChangePlayerType(Player.White);
+                playerList[player2Index].ChangePlayerType(Player.Red);
+
+                game.players[(int)Player.White] = playerList[player1Index];
+                game.players[(int)Player.Red] = playerList[player2Index];
+
+                game.guiController.UpdateGui((Gameboard)game.gameboard.Clone());
+
+                game.timerNextMove.Stop();
+                game.timerNextMove.Start();
+            }
+
+            public void Continue()
+            {
+                if(active == false)
+                {
+                    return;
+                }
+
+                if(game.gameLogic.IsFinished())
+                {
+                    // Get winner
+                    Player winner = game.gameLogic.GetNextPlayer(game.gameboard.CurrentPlayer);
+                    if(winner == Player.White)
+                    {
+                        wins[player1Index]++;
+                    }
+                    else
+                    {
+                        wins[player2Index]++;
+                    }
+                }
+
+                do
+                {
+                    iteration++;
+                    if (iteration >= MAX_ITERATIONS)
+                    {
+                        iteration = 0;
+
+                        // DEBUG
+                        if (player1Index != player2Index)
+                        {
+                            roundCounter++;
+                            game.guiController.AddMessage(String.Format("{0}/{1}", roundCounter, Fac(playerList.Count)));
+                        }
+
+                        player2Index = (player2Index + 1) % playerList.Count;
+                        if (player2Index == 0)
+                        {
+                            player1Index++;
+                            if (player1Index >= playerList.Count)
+                            {
+                                active = false;
+
+                                Console.WriteLine("Player evaluation: ");
+                                for (int i = 0; i < playerList.Count; i++)
+                                {
+                                    Console.WriteLine("\tPlayer {0}: {1}", i, wins[i]);
+                                }
+
+                                game.guiController.AddMessage("Evaluation finished.");
+
+                                break;
+                            }
+                        }
+                    }
+                } while (player1Index == player2Index);
+
+                if (active == false)
+                {
+                    return;
+                }
+
+                RestartGame();
+            }
+
+            private static int Fac(int n)
+            {
+                int f = 1;
+                for(int i=2;i<=n;i++)
+                {
+                    f *= i;
+                }
+                return f;
             }
         }
     }
