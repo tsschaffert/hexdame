@@ -46,8 +46,8 @@ namespace Hexdame.Player
 
             for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
             {
-                List<Move> currentBestMove = new List<Move>();
-                int currentBestValue = int.MinValue;
+                bestValue = int.MinValue;
+                bestMove.Clear();
 
                 //if(currentDepth > 1)
                 {
@@ -65,27 +65,16 @@ namespace Hexdame.Player
 
                     int score = -AlphaBeta(newState, currentDepth - 1, GameLogic.LOSS_VALUE, GameLogic.WIN_VALUE, false);
 
-                    if (score > currentBestValue)
+                    if (score > bestValue)
                     {
-                        currentBestMove.Clear();
-                        currentBestMove.Add(move);
-                        currentBestValue = score;
+                        bestMove.Clear();
+                        bestMove.Add(move);
+                        bestValue = score;
                     }
-                    else if(score == currentBestValue)
+                    else if (score == bestValue)
                     {
-                        currentBestMove.Add(move);
+                        bestMove.Add(move);
                     }
-                }
-
-                if (currentBestValue > bestValue)
-                {
-                    bestValue = currentBestValue;
-                    bestMove.Clear();
-                    bestMove.AddRange(currentBestMove);
-                }
-                else if(currentBestValue == bestValue)
-                {
-                    bestMove.AddRange(currentBestMove);
                 }
             }
 
@@ -171,6 +160,7 @@ namespace Hexdame.Player
                     }
                     if (score >= beta)
                     {
+                        killMove = move;
                         break;
                     }
                 }

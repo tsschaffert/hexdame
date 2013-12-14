@@ -41,11 +41,11 @@ namespace Hexdame
             gameLogic = new GameLogic(gameboard);
             gameHistory = new Stack<Gameboard>();
 
-            /*evaluator = new Evaluator(this,
+            evaluator = new Evaluator(this,
                 new AlphaBetaPlayer(Player.White, 2),
-                new AlphaBetaMCPlayer(Player.White, 3)
-                );*/
-            evaluator = new Evaluator(this);
+                new AlphaBetaIDPlayer(Player.White, 2)
+                );
+            //evaluator = new Evaluator(this);
 
             this.guiController = guiController;
             players = new AbstractPlayer[NUMBER_OF_PLAYERS];
@@ -83,7 +83,7 @@ namespace Hexdame
             gameHistory.Clear();
             gameHistory.Push((Gameboard)gameboard.Clone());
 
-            players[(int)Player.White] = new AlphaBetaMCPlayer(Player.White, 2);
+            players[(int)Player.White] = new AlphaBetaIDPlayer(Player.White, 2);
             players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 2);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
@@ -246,7 +246,7 @@ namespace Hexdame
         {
             private int[] wins;
             private List<AbstractPlayer> playerList = new List<AbstractPlayer>();
-            public const int MAX_ITERATIONS = 20;
+            public const int MAX_ITERATIONS = 4;
             private bool active;
             private Game game;
 
