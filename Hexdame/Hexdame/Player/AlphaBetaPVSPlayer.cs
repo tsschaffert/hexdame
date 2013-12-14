@@ -172,6 +172,7 @@ namespace Hexdame.Player
 
                         int value = -AlphaBeta(newState, depth - 1, -upperbound, -lowerbound, !myMove);
 
+                        // Fail high
                         if(value >= upperbound && value < beta)
                         {
                             value = -AlphaBeta(newState, depth - 1, -beta, -value, !myMove);

@@ -134,6 +134,8 @@ namespace Hexdame.Player
                 if (moveOrdering)
                 {
                     OrderMoves(possibleMoves, state, killMove);
+                    // Reset kill move
+                    killMove = null;
                 }
 
                 foreach (Move move in possibleMoves)
@@ -215,11 +217,11 @@ namespace Hexdame.Player
             for (int i = 0; i < moves.Count; i++)
             {
                 // Check for kill move
-                if(moves[i] == killMove)
+                /*if(moves[i] == killMove)
                 {
                     moves[i].Value = GameLogic.WIN_VALUE - 1;
                     continue;
-                }
+                }*/
 
                 Gameboard newState = (Gameboard)state.Clone();
                 GameLogic newLogic = new GameLogic(newState);
@@ -242,6 +244,13 @@ namespace Hexdame.Player
         {
             // Maybe negate?
             return m1.Value.CompareTo(m2.Value);
+        }
+
+        public override void ChangePlayerType(Game.Player playerType)
+        {
+            base.ChangePlayerType(playerType);
+
+            evaluation.PlayerType = playerType;
         }
     }
 }

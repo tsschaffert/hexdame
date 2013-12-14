@@ -285,5 +285,12 @@ namespace Hexdame.Player
             // TODO maybe negate?
             return m1.Value.CompareTo(m2.Value);
         }
+
+        public override void ChangePlayerType(Game.Player playerType)
+        {
+            base.ChangePlayerType(playerType);
+
+            evaluation.PlayerType = playerType;
+        }
     }
 }

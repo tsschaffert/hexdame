@@ -23,6 +23,10 @@ namespace Hexdame
 
         public const int NUMBER_OF_PLAYERS = 2;
         public const int PAUSE_BETWEEN_MOVES = 1;
+        public const int MAX_ROUNDS = 300;
+
+        private int currentRound;
+
         public enum Player { White = 0, Red = 1 }
 
         private Stack<Gameboard> gameHistory;
@@ -38,9 +42,8 @@ namespace Hexdame
             gameHistory = new Stack<Gameboard>();
 
             /*evaluator = new Evaluator(this,
-                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 10, 14, 0, 0)),
-                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 10, 14, 1, 0)),
-                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 10, 14, 5, 0))
+                new AlphaBetaPlayer(Player.White, 2),
+                new AlphaBetaMCPlayer(Player.White, 3)
                 );*/
             evaluator = new Evaluator(this);
 
@@ -49,8 +52,14 @@ namespace Hexdame
             timerNextMove = new Timer(PAUSE_BETWEEN_MOVES);
             timerNextMove.Elapsed += timerNextMove_Elapsed;
             timerNextMove.AutoReset = false;
-            NewGame();
-            //evaluator.Start();
+            if(evaluator.IsActive)
+            {
+                evaluator.Start();
+            }
+            else
+            {
+                NewGame();
+            }
         }
 
         void timerNextMove_Elapsed(object sender, ElapsedEventArgs e)
@@ -69,11 +78,13 @@ namespace Hexdame
                 LoadState();
             }
 
+            currentRound = 0;
+
             gameHistory.Clear();
             gameHistory.Push((Gameboard)gameboard.Clone());
 
-            players[(int)Player.White] = new AlphaBetaPlayer(Player.White, 1);
-            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 1);
+            players[(int)Player.White] = new AlphaBetaMCPlayer(Player.White, 2);
+            players[(int)Player.Red] = new AlphaBetaPlayer(Player.Red, 2);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 
@@ -138,6 +149,18 @@ namespace Hexdame
         public void NextMove()
         {
             Game.Player activePlayer = gameboard.CurrentPlayer;
+
+            // If evaluating, abort match after MAX_ROUNDS
+            if (evaluator.IsActive)
+            {
+                currentRound++;
+                if (currentRound > MAX_ROUNDS)
+                {
+                    // Abort game
+                    evaluator.Continue();
+                    return;
+                }
+            }
 
             if (!evaluator.IsActive)
             {
@@ -223,7 +246,7 @@ namespace Hexdame
         {
             private int[] wins;
             private List<AbstractPlayer> playerList = new List<AbstractPlayer>();
-            public const int MAX_ITERATIONS = 50;
+            public const int MAX_ITERATIONS = 20;
             private bool active;
             private Game game;
 
@@ -276,6 +299,8 @@ namespace Hexdame
             private void RestartGame()
             {
                 game.gameboard.Reset();
+
+                game.currentRound = 0;
 
                 game.gameHistory.Clear();
                 game.gameHistory.Push((Gameboard)game.gameboard.Clone());
