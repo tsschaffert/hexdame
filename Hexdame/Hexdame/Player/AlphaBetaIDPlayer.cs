@@ -44,7 +44,9 @@ namespace Hexdame.Player
                 return possibleMoves[0];
             }
 
-            for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
+            int startDepth = (depth % 2 == 0) ? 2 : 1;
+
+            for (int currentDepth = startDepth; currentDepth <= depth; currentDepth += 2)
             {
                 bestValue = int.MinValue;
                 bestMove.Clear();

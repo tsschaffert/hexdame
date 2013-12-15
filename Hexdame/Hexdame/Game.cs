@@ -42,8 +42,8 @@ namespace Hexdame
             gameHistory = new Stack<Gameboard>();
 
             /*evaluator = new Evaluator(this,
-                new AlphaBetaPlayer(Player.White, 2),
-                new AlphaBetaIDPlayer(Player.White, 2)
+                new AlphaBetaPlayer(Player.White, 4),
+                new AlphaBetaQPlayer(Player.White, 4)
                 );*/
             evaluator = new Evaluator(this);
 
@@ -83,7 +83,7 @@ namespace Hexdame
             gameHistory.Clear();
             gameHistory.Push((Gameboard)gameboard.Clone());
 
-            players[(int)Player.White] = new AlphaBetaIDPlayer(Player.White, 6);
+            players[(int)Player.White] = new AlphaBetaIDPlayer(Player.White, 5);
             players[(int)Player.Red] = new RandomPlayer(Player.Red);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());

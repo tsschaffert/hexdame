@@ -145,7 +145,7 @@ namespace Hexdame.Player
             }
 
             GameLogic gameLogic = new GameLogic(state);
-            var possibleMoves = gameLogic.GetPossibleMoves();
+            var possibleMoves = gameLogic.GetPossibleCaptureMoves();
 
             foreach (Move move in possibleMoves)
             {

@@ -103,6 +103,31 @@ namespace Hexdame
             return new List<Move>(possibleMoves.Where(move => NumberOfCaptures(move) == maxCaptures));
         }
 
+        public List<Move> GetPossibleCaptureMoves()
+        {
+            List<Move> possibleMoves = GetPossibleWithoutLookingAtMaxCaptures();
+
+            // Get max number of captures
+            int maxCaptures = 0;
+            foreach (Move move in possibleMoves)
+            {
+                int captures = NumberOfCaptures(move);
+                if (captures > maxCaptures)
+                {
+                    maxCaptures = captures;
+                }
+            }
+
+            // Only return list with capture moves, if no capture move, return empty list
+            if(maxCaptures == 0)
+            {
+                return new List<Move>();
+            }
+
+            // Filter invalid moves
+            return new List<Move>(possibleMoves.Where(move => NumberOfCaptures(move) == maxCaptures));
+        }
+
         public List<Move> GetPossibleWithoutLookingAtMaxCaptures()
         {
             List<Move> possibleMoves = new List<Move>();
