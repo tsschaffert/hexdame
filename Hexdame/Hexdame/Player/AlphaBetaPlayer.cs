@@ -49,6 +49,9 @@ namespace Hexdame.Player
                 return possibleMoves[0];
             }
 
+            int alpha = GameLogic.LOSS_VALUE;
+            int beta = GameLogic.WIN_VALUE;
+
             foreach (Move move in possibleMoves)
             {
                 // DEBUG
@@ -58,7 +61,12 @@ namespace Hexdame.Player
                 GameLogic newLogic = new GameLogic(newState);
                 newLogic.ApplyMove(move);
 
-                int score = -AlphaBeta(newState, depth - 1, GameLogic.LOSS_VALUE, GameLogic.WIN_VALUE, false);
+                int score = -AlphaBeta(newState, depth - 1, -beta, -alpha, false);
+
+                if (score > alpha)
+                {
+                    alpha = score;
+                }
 
                 if (score > bestValue)
                 {

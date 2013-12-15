@@ -9,7 +9,7 @@ namespace Hexdame.Player
     {
         protected int weightMan = 10;
         protected int weightKing = 15;
-        protected int weightMovement = 1;
+        protected int weightMovement = 0;
 
         protected int maxRandom = 9;
 
