@@ -335,7 +335,9 @@ namespace Hexdame
                 }
             }
 
-            return white == 0 || red == 0;
+            bool boardEmpty = white == 0 || red == 0;
+
+            return boardEmpty || GetPossibleMoves().Count == 0;
         }
 
         public int NumberOfCaptures(Move move)
@@ -411,7 +413,7 @@ namespace Hexdame
             return null;
         }
 
-        public Game.Player GetNextPlayer(Game.Player currentPlayer)
+        public static Game.Player GetNextPlayer(Game.Player currentPlayer)
         {
             return (Game.Player)(1 - (int)currentPlayer);
         }

@@ -79,10 +79,5 @@ namespace Hexdame
                 gui.BeginInvoke(new InvokeDelegateUpdateActivePlayer(gui.UpdateActivePlayer), new object[] { activePlayer });
             }
         }
-
-        public void UndoLastMove()
-        {
-            game.UndoLastMove();
-        }
     }
 }

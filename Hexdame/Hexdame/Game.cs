@@ -29,8 +29,6 @@ namespace Hexdame
 
         public enum Player { White = 0, Red = 1 }
 
-        private Stack<Gameboard> gameHistory;
-
         private bool firstGame = true;
 
         private Evaluator evaluator;
@@ -39,11 +37,12 @@ namespace Hexdame
         {
             gameboard = new Gameboard();
             gameLogic = new GameLogic(gameboard);
-            gameHistory = new Stack<Gameboard>();
 
             /*evaluator = new Evaluator(this,
-                new AlphaBetaPlayer(Player.White, 4),
-                new AlphaBetaQPlayer(Player.White, 4)
+                new AlphaBetaPlayer(Player.White, 1),
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Game.Player.White, 1000, 1500, 30, 60, 0)),
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Game.Player.White, 1000, 1500, 50, 80, 0)),
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Game.Player.White, 1000, 1500, 50, 50, 0))
                 );*/
             evaluator = new Evaluator(this);
 
@@ -80,30 +79,13 @@ namespace Hexdame
 
             currentRound = 0;
 
-            gameHistory.Clear();
-            gameHistory.Push((Gameboard)gameboard.Clone());
-
-            players[(int)Player.White] = new AlphaBetaIDPlayer(Player.White, 5);
+            players[(int)Player.White] = new AlphaBetaTTPlayer(Player.White, 6);
             players[(int)Player.Red] = new RandomPlayer(Player.Red);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 
             timerNextMove.Stop();
             timerNextMove.Start();
-        }
-
-        public void UndoLastMove()
-        {
-            if(gameHistory.Count > 0)
-            {
-                gameboard = gameHistory.Pop();
-                gameLogic = new GameLogic(gameboard);
-
-                guiController.UpdateGui((Gameboard)gameboard.Clone());
-
-                timerNextMove.Stop();
-                timerNextMove.Start();
-            }
         }
 
         public bool SendMove(Move move)
@@ -124,7 +106,6 @@ namespace Hexdame
                 }
 
                 // Save current state
-                gameHistory.Push((Gameboard)gameboard.Clone());
                 SaveState();
 
                 if (!gameLogic.IsFinished())
@@ -246,7 +227,7 @@ namespace Hexdame
         {
             private int[] wins;
             private List<AbstractPlayer> playerList = new List<AbstractPlayer>();
-            public const int MAX_ITERATIONS = 4;
+            public const int MAX_ITERATIONS = 50;
             private bool active;
             private Game game;
 
@@ -302,9 +283,6 @@ namespace Hexdame
 
                 game.currentRound = 0;
 
-                game.gameHistory.Clear();
-                game.gameHistory.Push((Gameboard)game.gameboard.Clone());
-
                 // Set player colours
                 playerList[player1Index].ChangePlayerType(Player.White);
                 playerList[player2Index].ChangePlayerType(Player.Red);
@@ -328,7 +306,7 @@ namespace Hexdame
                 if(game.gameLogic.IsFinished())
                 {
                     // Get winner
-                    Player winner = game.gameLogic.GetNextPlayer(game.gameboard.CurrentPlayer);
+                    Player winner = GameLogic.GetNextPlayer(game.gameboard.CurrentPlayer);
                     if(winner == Player.White)
                     {
                         wins[player1Index]++;

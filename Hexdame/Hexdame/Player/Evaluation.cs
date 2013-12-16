@@ -9,9 +9,10 @@ namespace Hexdame.Player
     {
         protected int weightMan = 10;
         protected int weightKing = 15;
-        protected int weightMovement = 0;
+        protected int weightMovementMan = 0;
+        protected int weightMovementKing = 0;
 
-        protected int maxRandom = 9;
+        protected int maxRandom = 0;
 
         protected Random random;
         protected Game.Player playerType; 
@@ -28,12 +29,13 @@ namespace Hexdame.Player
             this.playerType = playerType;
         }
 
-        public Evaluation(Game.Player playerType, int weightMan, int weightKing, int weightMovement, int maxRandom)
+        public Evaluation(Game.Player playerType, int weightMan, int weightKing, int weightMovementMan, int weightMovementKing, int maxRandom)
             : this(playerType)
         {
             this.weightMan = weightMan;
             this.weightKing = weightKing;
-            this.weightMovement = weightMovement;
+            this.weightMovementMan = weightMovementMan;
+            this.weightMovementKing = weightMovementKing;
             this.maxRandom = maxRandom;
         }
 
@@ -44,6 +46,7 @@ namespace Hexdame.Player
             // Evaluation of piece count
             int valuePieces = EvaluatePieces(state);
 
+            // If win or loss, no further evaluation needed
             if (valuePieces == GameLogic.LOSS_VALUE || valuePieces == GameLogic.WIN_VALUE)
             {
                 return valuePieces;
@@ -52,9 +55,12 @@ namespace Hexdame.Player
             int valueMovement = EvaluateMovement(state);
 
             value += valuePieces;
-            //value += valueMovement;
+            value += valueMovement;
 
-            //value += random.Next(-maxRandom, maxRandom+1);
+            if(maxRandom != 0)
+            {
+                value += random.Next(-maxRandom, maxRandom + 1);
+            }
 
             return value;
         }
@@ -124,29 +130,67 @@ namespace Hexdame.Player
 
         protected int EvaluateMovement(Gameboard state)
         {
-            GameLogic gameLogic = new GameLogic(state);
-
-            var possibleMoves = gameLogic.GetPossibleWithoutLookingAtMaxCaptures();
-
-            if(possibleMoves.Count == 0)
+            if(weightMovementMan == 0 && weightMovementKing == 0)
             {
                 return 0;
             }
 
-            int piecesAbleToMove = 1;
+            // Get movement value for current player
+            int value = EvaluateMovementForPlayer(state, playerType);
+            // Substract value for opponent
+            value -= EvaluateMovementForPlayer(state, GameLogic.GetNextPlayer(playerType));
+
+            return value;
+        }
+
+        protected int EvaluateMovementForPlayer(Gameboard state, Game.Player player)
+        {
+            Game.Player oldPlayer = state.CurrentPlayer;
+            state.CurrentPlayer = player;
+
+            GameLogic gameLogic = new GameLogic(state);
+
+            var possibleMoves = gameLogic.GetPossibleWithoutLookingAtMaxCaptures();
+
+            if (possibleMoves.Count == 0)
+            {
+                return 0;
+            }
+
+            int menAbleToMove = 0;
+            int kingsAbleToMove = 0;
 
             Position lastStartPosition = possibleMoves[0].GetStartingPosition();
+
+            if (state.GetCell(lastStartPosition).ContainsKing)
+            {
+                kingsAbleToMove++;
+            }
+            else
+            {
+                menAbleToMove++;
+            }
 
             foreach (Move move in possibleMoves)
             {
                 if (move.GetStartingPosition() != lastStartPosition)
                 {
-                    piecesAbleToMove++;
                     lastStartPosition = move.GetStartingPosition();
+
+                    if (state.GetCell(lastStartPosition).ContainsKing)
+                    {
+                        kingsAbleToMove++;
+                    }
+                    else
+                    {
+                        menAbleToMove++;
+                    }
                 }
             }
 
-            return piecesAbleToMove * weightMovement;
+            state.CurrentPlayer = oldPlayer;
+
+            return menAbleToMove * weightMovementMan + kingsAbleToMove * weightMovementKing;
         }
     }
 }

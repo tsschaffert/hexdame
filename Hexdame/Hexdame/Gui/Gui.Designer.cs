@@ -34,7 +34,6 @@
             this.buttonNewGame = new System.Windows.Forms.Button();
             this.labelCurrentPlayer = new System.Windows.Forms.Label();
             this.panelMenu = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
             this.panelMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -85,7 +84,7 @@
             this.labelCurrentPlayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCurrentPlayer.AutoSize = true;
             this.labelCurrentPlayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 22F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCurrentPlayer.Location = new System.Drawing.Point(3, 112);
+            this.labelCurrentPlayer.Location = new System.Drawing.Point(3, 56);
             this.labelCurrentPlayer.MaximumSize = new System.Drawing.Size(247, 0);
             this.labelCurrentPlayer.Name = "labelCurrentPlayer";
             this.labelCurrentPlayer.Size = new System.Drawing.Size(0, 36);
@@ -96,7 +95,6 @@
             this.panelMenu.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelMenu.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.panelMenu.Controls.Add(this.button1);
             this.panelMenu.Controls.Add(this.buttonConfirmMove);
             this.panelMenu.Controls.Add(this.buttonNewGame);
             this.panelMenu.Controls.Add(this.labelCurrentPlayer);
@@ -104,17 +102,6 @@
             this.panelMenu.Name = "panelMenu";
             this.panelMenu.Size = new System.Drawing.Size(253, 500);
             this.panelMenu.TabIndex = 6;
-            // 
-            // button1
-            // 
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 22F);
-            this.button1.Location = new System.Drawing.Point(3, 59);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(247, 50);
-            this.button1.TabIndex = 6;
-            this.button1.Text = "Undo";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Gui
             // 
@@ -145,7 +132,6 @@
         private System.Windows.Forms.Button buttonNewGame;
         private System.Windows.Forms.Label labelCurrentPlayer;
         private System.Windows.Forms.Panel panelMenu;
-        private System.Windows.Forms.Button button1;
     }
 }
 
