@@ -44,15 +44,14 @@ namespace Hexdame.Player
                 return possibleMoves[0];
             }
 
-            for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
+            int startDepth = (depth % 2 == 0) ? 2 : 1;
+
+            for (int currentDepth = startDepth; currentDepth <= depth; currentDepth += 2)
             {
                 bestValue = int.MinValue;
                 bestMove.Clear();
 
-                //if(currentDepth > 1)
-                {
-                    OrderMoves(possibleMoves, gameboard);
-                }
+                OrderMoves(possibleMoves, gameboard);
 
                 int alpha = GameLogic.LOSS_VALUE;
                 int beta = GameLogic.WIN_VALUE;
@@ -90,9 +89,6 @@ namespace Hexdame.Player
             n++;
             Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
 
-            // DEBUG
-            //transpositionTable.Clear();
-
             // Return one of the best moves
             return bestMove[random.Next(bestMove.Count)];
         }
@@ -109,7 +105,6 @@ namespace Hexdame.Player
 
                 if (transposition.Depth >= depth)
                 {
-                    // TODO possible to just return exact value?
                     if (transposition.Lowerbound == transposition.Upperbound)
                     {
                         return transposition.Lowerbound;
@@ -140,11 +135,9 @@ namespace Hexdame.Player
                 score = int.MinValue;
                 var possibleMoves = gameLogic.GetPossibleMoves();
 
-                if (depth > 1)
-                {
-                    OrderMoves(possibleMoves, state);
-                }
+                OrderMoves(possibleMoves, state);
 
+                // Calculate score for PVS
                 {
                     Move pvsMove = possibleMoves[0];
 
@@ -179,10 +172,6 @@ namespace Hexdame.Player
                         {
                             score = value;
                         }
-                        /*if (score > alpha)
-                        {
-                            alpha = score;
-                        }*/
                         if (score >= beta)
                         {
                             break;
@@ -262,8 +251,14 @@ namespace Hexdame.Player
 
         public static int MoveComparison(Move m1, Move m2)
         {
-            // TODO maybe negate?
             return m1.Value.CompareTo(m2.Value);
+        }
+
+        public override void ChangePlayerType(Game.Player playerType)
+        {
+            base.ChangePlayerType(playerType);
+
+            evaluation.PlayerType = playerType;
         }
     }
 }

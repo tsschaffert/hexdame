@@ -40,10 +40,7 @@ namespace Hexdame
 
             /*evaluator = new Evaluator(this,
                 new AlphaBetaPlayer(Player.White, 1),
-                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Game.Player.White, 1000, 1500, 30, 60, 0)),
-                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Game.Player.White, 1000, 1500, 50, 80, 0)),
-                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Game.Player.White, 1000, 1500, 50, 50, 0))
-                );*/
+                new AlphaBetaFinalPlayer(Player.White, 1));*/
             evaluator = new Evaluator(this);
 
             this.guiController = guiController;
@@ -79,7 +76,7 @@ namespace Hexdame
 
             currentRound = 0;
 
-            players[(int)Player.White] = new AlphaBetaTTPlayer(Player.White, 6);
+            players[(int)Player.White] = new AlphaBetaFinalPlayer(Player.White, 5);
             players[(int)Player.Red] = new RandomPlayer(Player.Red);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());

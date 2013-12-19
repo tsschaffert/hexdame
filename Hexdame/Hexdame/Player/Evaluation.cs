@@ -39,6 +39,10 @@ namespace Hexdame.Player
             this.maxRandom = maxRandom;
         }
 
+        /// <summary>
+        /// Returns the evaluation for the given game state. Evaluation if always from the perspective
+        /// of the computer player using it. So for NegaMax, it has to be negated in opponents turn.
+        /// </summary>
         public int Evaluate(Gameboard state)
         {
             int value = 0;
@@ -53,6 +57,12 @@ namespace Hexdame.Player
             }
 
             int valueMovement = EvaluateMovement(state);
+
+            // If win or loss, no further evaluation needed
+            if (valueMovement == GameLogic.LOSS_VALUE || valueMovement == GameLogic.WIN_VALUE)
+            {
+                return valueMovement;
+            }
 
             value += valuePieces;
             value += valueMovement;
@@ -136,11 +146,23 @@ namespace Hexdame.Player
             }
 
             // Get movement value for current player
-            int value = EvaluateMovementForPlayer(state, playerType);
-            // Substract value for opponent
-            value -= EvaluateMovementForPlayer(state, GameLogic.GetNextPlayer(playerType));
+            int valuePlayer = EvaluateMovementForPlayer(state, playerType);
 
-            return value;
+            // Check if we are out of moves
+            if(valuePlayer == GameLogic.LOSS_VALUE)
+            {
+                return valuePlayer;
+            }
+
+            int valueOpponent = EvaluateMovementForPlayer(state, GameLogic.GetNextPlayer(playerType));
+
+            // Check if opponent is out of moves
+            if(valueOpponent == GameLogic.WIN_VALUE)
+            {
+                return valueOpponent;
+            }
+
+            return valuePlayer - valueOpponent;
         }
 
         protected int EvaluateMovementForPlayer(Gameboard state, Game.Player player)
@@ -154,7 +176,16 @@ namespace Hexdame.Player
 
             if (possibleMoves.Count == 0)
             {
-                return 0;
+                // No more moves for me
+                if(player == playerType)
+                {
+                    return GameLogic.LOSS_VALUE;
+                }
+                // No more moves for the opponent
+                else
+                {
+                    return GameLogic.WIN_VALUE;
+                }
             }
 
             int menAbleToMove = 0;

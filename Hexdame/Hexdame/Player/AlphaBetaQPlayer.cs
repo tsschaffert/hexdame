@@ -132,43 +132,49 @@ namespace Hexdame.Player
             // DEBUG
             iterationCounter++;
 
-            int score = myMove ? evaluation.Evaluate(state) : -evaluation.Evaluate(state);
-
-            if(score >= beta)
-            {
-                return score;
-            }
-
-            if(score > alpha)
-            {
-                alpha = score;
-            }
+            int score = int.MinValue;
 
             GameLogic gameLogic = new GameLogic(state);
-            var possibleMoves = gameLogic.GetPossibleCaptureMoves();
+            var possibleCaptureMoves = gameLogic.GetPossibleCaptureMoves();
 
-            foreach (Move move in possibleMoves)
+            // If there are no capture moves possible, use evaluation function and return value
+            if (possibleCaptureMoves.Count == 0)
             {
-                Gameboard newState = (Gameboard)state.Clone();
-                GameLogic newLogic = new GameLogic(newState);
-                newLogic.ApplyMove(move);
-
-                int value = -QuiescenceSearch(newState, -beta, -alpha, !myMove);
-                if (value > score)
+                score = myMove ? evaluation.Evaluate(state) : -evaluation.Evaluate(state);
+            }
+            // If there are capture moves, continue iterating
+            else
+            {
+                foreach (Move move in possibleCaptureMoves)
                 {
-                    score = value;
-                    if (score >= beta)
+                    Gameboard newState = (Gameboard)state.Clone();
+                    GameLogic newLogic = new GameLogic(newState);
+                    newLogic.ApplyMove(move);
+
+                    int value = -QuiescenceSearch(newState, -beta, -alpha, !myMove);
+                    if (value > score)
                     {
-                        break;
-                    }
-                    if (score > alpha)
-                    {
-                        alpha = score;
+                        score = value;
+                        if (score >= beta)
+                        {
+                            break;
+                        }
+                        if (score > alpha)
+                        {
+                            alpha = score;
+                        }
                     }
                 }
             }
 
             return score;
+        }
+
+        public override void ChangePlayerType(Game.Player playerType)
+        {
+            base.ChangePlayerType(playerType);
+
+            evaluation.PlayerType = playerType;
         }
     }
 }

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Hexdame.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Hexdame.Model;
 
 namespace Hexdame.Player
 {
-    class AlphaBetaTTPlayer : AbstractComputerPlayer
+    class AlphaBetaFinalPlayer : AbstractComputerPlayer
     {
         protected readonly int depth;
         protected Random random;
@@ -17,12 +17,12 @@ namespace Hexdame.Player
         private int iterationCounter;
         private int n;
 
-        public AlphaBetaTTPlayer(Game.Player playerType, int depth)
+        public AlphaBetaFinalPlayer(Game.Player playerType, int depth)
             : base(playerType)
         {
             this.depth = depth;
             random = new Random();
-            transpositionTable = new LimitedSizeDictionary<Int64,Transposition>();
+            transpositionTable = new LimitedSizeDictionary<Int64, Transposition>();
             evaluation = new Evaluation(playerType);
         }
 
@@ -44,43 +44,50 @@ namespace Hexdame.Player
                 return possibleMoves[0];
             }
 
-            // TODO
-            OrderMoves(possibleMoves, gameboard);
+            int startDepth = (depth % 2 == 0) ? 2 : 1;
 
-            int alpha = GameLogic.LOSS_VALUE;
-            int beta = GameLogic.WIN_VALUE;
-
-            foreach (Move move in possibleMoves)
+            for (int currentDepth = startDepth; currentDepth <= depth; currentDepth += 2)
             {
-                // DEBUG
-                iterationCounter++;
+                bestValue = int.MinValue;
+                bestMove.Clear();
 
-                Gameboard newState = (Gameboard)gameboard.Clone();
-                GameLogic newLogic = new GameLogic(newState);
-                newLogic.ApplyMove(move);
+                OrderMoves(possibleMoves, gameboard);
 
-                int score = -AlphaBeta(newState, depth - 1, -beta, -alpha, false);
+                int alpha = GameLogic.LOSS_VALUE;
+                int beta = GameLogic.WIN_VALUE;
 
-                if (score > alpha)
+                foreach (Move move in possibleMoves)
                 {
-                    alpha = score;
-                }
+                    // DEBUG
+                    iterationCounter++;
 
-                if (score > bestValue)
-                {
-                    bestMove.Clear();
-                    bestMove.Add(move);
-                    bestValue = score;
-                }
-                else if (score == bestValue)
-                {
-                    bestMove.Add(move);
+                    Gameboard newState = (Gameboard)gameboard.Clone();
+                    GameLogic newLogic = new GameLogic(newState);
+                    newLogic.ApplyMove(move);
+
+                    int score = -AlphaBeta(newState, currentDepth - 1, -beta, -alpha, false);
+
+                    if (score > alpha)
+                    {
+                        alpha = score;
+                    }
+
+                    if (score > bestValue)
+                    {
+                        bestMove.Clear();
+                        bestMove.Add(move);
+                        bestValue = score;
+                    }
+                    else if (score == bestValue)
+                    {
+                        bestMove.Add(move);
+                    }
                 }
             }
 
             // DEBUG
             n++;
-            Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter/n, n);
+            Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
 
             // Return one of the best moves
             return bestMove[random.Next(bestMove.Count)];
@@ -92,10 +99,9 @@ namespace Hexdame.Player
             iterationCounter++;
 
             Int64 zHash = state.GetZobristHash();
-            bool moveOrdering = false;
             Move bestMove = null;
 
-            if(transpositionTable.ContainsKey(zHash))
+            if (transpositionTable.ContainsKey(zHash))
             {
                 Transposition transposition = transpositionTable[zHash];
 
@@ -103,6 +109,7 @@ namespace Hexdame.Player
 
                 if (transposition.Depth >= depth)
                 {
+                    // TODO possible to just return exact value?
                     if (transposition.Lowerbound == transposition.Upperbound)
                     {
                         return transposition.Lowerbound;
@@ -119,10 +126,6 @@ namespace Hexdame.Player
                     alpha = Math.Max(alpha, transposition.Lowerbound);
                     beta = Math.Min(beta, transposition.Upperbound);
                 }
-                else if (transposition.Depth >= 1)
-                {
-                    moveOrdering = true;
-                }
             }
 
             GameLogic gameLogic = new GameLogic(state);
@@ -130,40 +133,97 @@ namespace Hexdame.Player
 
             if (depth <= 0 || gameLogic.IsFinished())
             {
-                score = myMove ? evaluation.Evaluate(state) : -evaluation.Evaluate(state);
+                score = -QuiescenceSearch(state, -beta, -alpha, !myMove);
             }
             else
             {
                 score = int.MinValue;
                 var possibleMoves = gameLogic.GetPossibleMoves();
 
-                // TODO move ordering
-                if (moveOrdering)
-                {
-                    OrderMoves(possibleMoves, state, bestMove);
-                    // Reset best move
-                    bestMove = null;
-                }
+                OrderMoves(possibleMoves, state, bestMove);
+                // Reset best move
+                bestMove = null;
 
-                foreach (Move move in possibleMoves)
+                // Multi-Cut
                 {
+                    Move move = possibleMoves[0];
+
                     Gameboard newState = (Gameboard)state.Clone();
                     GameLogic newLogic = new GameLogic(newState);
                     newLogic.ApplyMove(move);
 
-                    int value = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
-                    if (value > score)
+                    int c = 0;
+                    int m = 0;
+
+                    while (newState != null && m < 10)
                     {
-                        bestMove = move;
-                        score = value;
+                        int value = -AlphaBeta(newState, depth - 1 - 2, GameLogic.LOSS_VALUE, GameLogic.WIN_VALUE, false);
+
+                        if (value >= beta)
+                        {
+                            c++;
+                            if (c > 3)
+                            {
+                                return beta;
+                            }
+                        }
+
+                        m++;
+
+                        if (m < possibleMoves.Count)
+                        {
+                            move = possibleMoves[m];
+
+                            newState = (Gameboard)state.Clone();
+                            newLogic = new GameLogic(newState);
+                            newLogic.ApplyMove(move);
+                        }
+                        else
+                        {
+                            newState = null;
+                        }
                     }
-                    if (score > alpha)
+                }
+
+                // Calculate score for PVS
+                {
+                    Move pvsMove = possibleMoves[0];
+
+                    Gameboard newState = (Gameboard)state.Clone();
+                    GameLogic newLogic = new GameLogic(newState);
+                    newLogic.ApplyMove(pvsMove);
+
+                    score = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
+                }
+
+                if (score < beta)
+                {
+                    for (int i = 1; i < possibleMoves.Count; i++)
                     {
-                        alpha = score;
-                    }
-                    if (score >= beta)
-                    {
-                        break;
+                        Move move = possibleMoves[i];
+                        int lowerbound = Math.Max(alpha, score);
+                        int upperbound = lowerbound + 1;
+
+                        Gameboard newState = (Gameboard)state.Clone();
+                        GameLogic newLogic = new GameLogic(newState);
+                        newLogic.ApplyMove(move);
+
+                        int value = -AlphaBeta(newState, depth - 1, -upperbound, -lowerbound, !myMove);
+
+                        // Fail high
+                        if (value >= upperbound && value < beta)
+                        {
+                            value = -AlphaBeta(newState, depth - 1, -beta, -value, !myMove);
+                        }
+
+                        if (value > score)
+                        {
+                            score = value;
+                        }
+                        if (score >= beta)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -226,7 +286,7 @@ namespace Hexdame.Player
                 moves[i].Value = 0;
 
                 // Check for best move from last iteration
-                if(moves[i] == bestMove)
+                if (moves[i] == bestMove)
                 {
                     moves[i].Value = 1;
                     //continue;
@@ -237,7 +297,7 @@ namespace Hexdame.Player
                 newLogic.ApplyMove(moves[i]);
 
                 Int64 zHash = newState.GetZobristHash();
-                if(transpositionTable.ContainsKey(zHash))
+                if (transpositionTable.ContainsKey(zHash))
                 {
                     Transposition transposition = transpositionTable[zHash];
                     if (transposition.Lowerbound == transposition.Upperbound)
@@ -252,6 +312,49 @@ namespace Hexdame.Player
         public static int MoveComparison(Move m1, Move m2)
         {
             return m1.Value.CompareTo(m2.Value);
+        }
+
+        public int QuiescenceSearch(Gameboard state, int alpha, int beta, bool myMove)
+        {
+            // DEBUG
+            iterationCounter++;
+
+            int score = int.MinValue;
+
+            GameLogic gameLogic = new GameLogic(state);
+            var possibleCaptureMoves = gameLogic.GetPossibleCaptureMoves();
+
+            // If there are no capture moves possible, use evaluation function and return value
+            if (possibleCaptureMoves.Count == 0)
+            {
+                score = myMove ? evaluation.Evaluate(state) : -evaluation.Evaluate(state);
+            }
+            // If there are capture moves, continue iterating
+            else
+            {
+                foreach (Move move in possibleCaptureMoves)
+                {
+                    Gameboard newState = (Gameboard)state.Clone();
+                    GameLogic newLogic = new GameLogic(newState);
+                    newLogic.ApplyMove(move);
+
+                    int value = -QuiescenceSearch(newState, -beta, -alpha, !myMove);
+                    if (value > score)
+                    {
+                        score = value;
+                        if (score >= beta)
+                        {
+                            break;
+                        }
+                        if (score > alpha)
+                        {
+                            alpha = score;
+                        }
+                    }
+                }
+            }
+
+            return score;
         }
 
         public override void ChangePlayerType(Game.Player playerType)
