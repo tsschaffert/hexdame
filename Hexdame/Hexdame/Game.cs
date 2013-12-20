@@ -22,7 +22,7 @@ namespace Hexdame
         private AbstractPlayer[] players;
 
         public const int NUMBER_OF_PLAYERS = 2;
-        public const int PAUSE_BETWEEN_MOVES = 1;
+        public const int PAUSE_BETWEEN_MOVES = 300;
         public const int MAX_ROUNDS = 300;
 
         private int currentRound;
@@ -38,17 +38,26 @@ namespace Hexdame
             gameboard = new Gameboard();
             gameLogic = new GameLogic(gameboard);
 
+            // The evaluator class can be used to get a comparison regarding the win rate for several players
             /*evaluator = new Evaluator(this,
-                new AlphaBetaPlayer(Player.White, 1),
-                new AlphaBetaFinalPlayer(Player.White, 1));*/
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 1000, 1500, 50, 50, 0)),
+                new AlphaBetaPlayer(Player.White, 1, new Evaluation(Player.White, 1000, 2000, 50, 50, 0)));*/
             evaluator = new Evaluator(this);
 
             this.guiController = guiController;
             players = new AbstractPlayer[NUMBER_OF_PLAYERS];
             timerNextMove = new Timer(PAUSE_BETWEEN_MOVES);
             timerNextMove.Elapsed += timerNextMove_Elapsed;
-            timerNextMove.AutoReset = false;
-            if(evaluator.IsActive)
+            timerNextMove.AutoReset = false; 
+        }
+
+        /// <summary>
+        /// Starts the game, invoked when GUI is ready.
+        /// </summary>
+        public void Start()
+        {
+            // If evaluator is active, start evaluation, otherwise, start normal game
+            if (evaluator.IsActive)
             {
                 evaluator.Start();
             }
@@ -64,20 +73,25 @@ namespace Hexdame
             NextMove();
         }
 
+        /// <summary>
+        /// Resets the game board and players and starts the game
+        /// </summary>
         public void NewGame()
         {
-            gameboard.Reset();
+            gameboard = new Gameboard();
+            gameLogic = new GameLogic(gameboard);
 
-            if (firstGame)
+            // Loading of game state disabled
+            /*if (firstGame)
             {
                 firstGame = false;
                 LoadState();
-            }
+            }*/
 
             currentRound = 0;
 
-            players[(int)Player.White] = new AlphaBetaFinalPlayer(Player.White, 5);
-            players[(int)Player.Red] = new RandomPlayer(Player.Red);
+            players[(int)Player.White] = new HumanPlayer(Player.White);
+            players[(int)Player.Red] = new AlphaBetaFinalPlayer(Player.Red, 6);
 
             guiController.UpdateGui((Gameboard)gameboard.Clone());
 
@@ -85,9 +99,14 @@ namespace Hexdame
             timerNextMove.Start();
         }
 
+        /// <summary>
+        /// Takes a player move and checks if it can be performed
+        /// </summary>
         public bool SendMove(Move move)
         {
             Player activePlayer = gameboard.CurrentPlayer;
+
+            // Try to apply the move
             bool success = gameLogic.ApplyMove(move);
 
             if (!evaluator.IsActive)
@@ -95,6 +114,7 @@ namespace Hexdame
                 guiController.UpdateGui((Gameboard)gameboard.Clone());
             }
 
+            // Move allowed?
             if (success)
             {
                 if (!evaluator.IsActive)
@@ -102,18 +122,20 @@ namespace Hexdame
                     guiController.AddMessage("Player " + activePlayer.ToString() + " made a move: " + move);
                 }
 
-                // Save current state
-                SaveState();
+                // Saving of game state disabled
+                //SaveState();
 
                 if (!gameLogic.IsFinished())
                 {
+                    // Ask for next move
                     timerNextMove.Start();
                 }
                 else
                 {
-                    // Spiel zu Ende
+                    // Game over
                     ClearState();
 
+                    // Restart game if evaluating
                     if(evaluator.IsActive)
                     {
                         evaluator.Continue();
@@ -124,11 +146,14 @@ namespace Hexdame
             return success;
         }
 
+        /// <summary>
+        /// Get next move from a computer player or allow human player to make a move
+        /// </summary>
         public void NextMove()
         {
             Game.Player activePlayer = gameboard.CurrentPlayer;
 
-            // If evaluating, abort match after MAX_ROUNDS
+            // If evaluating, abort match after MAX_ROUNDS 
             if (evaluator.IsActive)
             {
                 currentRound++;
@@ -147,6 +172,7 @@ namespace Hexdame
 
             if(players[(int)activePlayer] is AbstractComputerPlayer)
             {
+                // Computer player needs to be told to make a move
                 guiController.GuiInputAllowed = false;
                 AbstractComputerPlayer computerPlayer = (AbstractComputerPlayer)players[(int)activePlayer];
                 while (!SendMove(computerPlayer.GetMove(gameboard))) ;
@@ -159,9 +185,9 @@ namespace Hexdame
 
         private void LoadState()
         {
-            // Too many file accesses
             if (evaluator.IsActive)
             {
+                // Too many file accesses
                 return;
             }
 
@@ -182,9 +208,9 @@ namespace Hexdame
 
         private void SaveState()
         {
-            // Too many file accesses
             if (evaluator.IsActive)
             {
+                // Too many file accesses
                 return;
             }
 
@@ -204,9 +230,9 @@ namespace Hexdame
 
         private void ClearState()
         {
-            // Too many file accesses
             if (evaluator.IsActive)
             {
+                // Too many file accesses
                 return;
             }
 
@@ -220,6 +246,9 @@ namespace Hexdame
             }
         }
 
+        /// <summary>
+        /// Class used to get a win rate for several computer players.
+        /// </summary>
         private class Evaluator
         {
             private int[] wins;
@@ -276,7 +305,8 @@ namespace Hexdame
 
             private void RestartGame()
             {
-                game.gameboard.Reset();
+                game.gameboard = new Gameboard();
+                game.gameLogic = new GameLogic(game.gameboard);
 
                 game.currentRound = 0;
 
@@ -321,11 +351,10 @@ namespace Hexdame
                     {
                         iteration = 0;
 
-                        // DEBUG
                         if (player1Index != player2Index)
                         {
                             roundCounter++;
-                            game.guiController.AddMessage(String.Format("{0}/{1}", roundCounter, Fac(playerList.Count)));
+                            game.guiController.AddMessage(String.Format("{0}/{1}", roundCounter, playerList.Count*(playerList.Count-1)));
                         }
 
                         player2Index = (player2Index + 1) % playerList.Count;
@@ -356,16 +385,6 @@ namespace Hexdame
                 }
 
                 RestartGame();
-            }
-
-            private static int Fac(int n)
-            {
-                int f = 1;
-                for(int i=2;i<=n;i++)
-                {
-                    f *= i;
-                }
-                return f;
             }
         }
     }

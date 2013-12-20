@@ -8,6 +8,7 @@ namespace Hexdame
 {
     public class Move : ICloneable
     {
+        // A move consists of a number of player positions
         private List<Position> positions;
         public int Value;
 
@@ -93,7 +94,7 @@ namespace Hexdame
 
         public override int GetHashCode()
         {
-            return positions.Count;// TODO
+            return positions.Count;
         }
 
         public object Clone()

@@ -44,6 +44,7 @@ namespace Hexdame.Player
                 return possibleMoves[0];
             }
 
+            // Increase search depth by 2
             int startDepth = (depth % 2 == 0) ? 2 : 1;
 
             for (int currentDepth = startDepth; currentDepth <= depth; currentDepth += 2)
@@ -109,7 +110,6 @@ namespace Hexdame.Player
 
                 if (transposition.Depth >= depth)
                 {
-                    // TODO possible to just return exact value?
                     if (transposition.Lowerbound == transposition.Upperbound)
                     {
                         return transposition.Lowerbound;
@@ -140,12 +140,9 @@ namespace Hexdame.Player
                 score = int.MinValue;
                 var possibleMoves = gameLogic.GetPossibleMoves();
 
-                if (depth > 1)
-                {
-                    OrderMoves(possibleMoves, state, bestMove);
-                    // Reset best move
-                    bestMove = null;
-                }
+                OrderMoves(possibleMoves, state, bestMove);
+                // Reset best move
+                bestMove = null;
 
                 foreach (Move move in possibleMoves)
                 {
@@ -156,6 +153,7 @@ namespace Hexdame.Player
                     int value = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
                     if (value > score)
                     {
+                        bestMove = move;
                         score = value;
                     }
                     if (score > alpha)
@@ -164,7 +162,6 @@ namespace Hexdame.Player
                     }
                     if (score >= beta)
                     {
-                        bestMove = move;
                         break;
                     }
                 }
@@ -231,7 +228,6 @@ namespace Hexdame.Player
                 if (moves[i] == bestMove)
                 {
                     moves[i].Value = 1;
-                    //continue;
                 }
 
                 Gameboard newState = (Gameboard)state.Clone();

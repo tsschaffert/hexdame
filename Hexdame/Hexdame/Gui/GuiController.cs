@@ -13,7 +13,7 @@ namespace Hexdame
         public delegate void InvokeDelegateUpdateActivePlayer(Game.Player activePlayer);
 
         private Game game;
-        private Gui gui;
+        public Gui gui;
         private bool guiInputAllowed;
 
         public bool GuiInputAllowed { set { guiInputAllowed = value; } get { return guiInputAllowed; } }
@@ -78,6 +78,11 @@ namespace Hexdame
             {
                 gui.BeginInvoke(new InvokeDelegateUpdateActivePlayer(gui.UpdateActivePlayer), new object[] { activePlayer });
             }
+        }
+
+        public void Start()
+        {
+            game.Start();
         }
     }
 }

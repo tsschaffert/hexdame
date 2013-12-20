@@ -76,13 +76,11 @@
     <Compile Include="Model\Position.cs" />
     <Compile Include="Player\AlphaBetaTTPlayer.cs" />
     <Compile Include="Player\AlphaBetaIDPlayer.cs" />
-    <Compile Include="Player\AlphaBetaParallelPlayer.cs" />
     <Compile Include="Player\MediumMinimaxPlayer.cs" />
     <Compile Include="Player\SimpleMinimaxPlayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Player\RandomPlayer.cs" />
-    <Compile Include="ThreadSafeRandom.cs" />
     <EmbeddedResource Include="Gui\Gui.resx">
       <DependentUpon>Gui.cs</DependentUpon>
     </EmbeddedResource>

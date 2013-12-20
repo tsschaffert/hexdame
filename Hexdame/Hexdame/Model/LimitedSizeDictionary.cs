@@ -1,22 +1,16 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Hexdame.Model
 {
-    class LimitedSizeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
+    class LimitedSizeDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue>
     {
-        public new void Add(TKey key, TValue value)
+        public void Add(TKey key, TValue value)
         {
-            try
-            {
-                base.Add(key, value);
-            }
-            catch(Exception e)
-            {
-
-            }
+            base.TryAdd(key, value);
         }
     }
 }

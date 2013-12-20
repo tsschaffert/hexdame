@@ -99,9 +99,13 @@ namespace Hexdame.Player
             iterationCounter++;
 
             Int64 zHash = state.GetZobristHash();
+            Move bestMove = null;
+
             if (transpositionTable.ContainsKey(zHash))
             {
                 Transposition transposition = transpositionTable[zHash];
+
+                bestMove = transposition.BestMove;
 
                 if (transposition.Depth >= depth)
                 {
@@ -136,6 +140,8 @@ namespace Hexdame.Player
                 var possibleMoves = gameLogic.GetPossibleMoves();
 
                 OrderMoves(possibleMoves, state);
+                // Reset best move
+                bestMove = null;
 
                 // Calculate score for PVS
                 {
@@ -146,6 +152,8 @@ namespace Hexdame.Player
                     newLogic.ApplyMove(pvsMove);
 
                     score = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
+
+                    bestMove = pvsMove;
                 }
 
                 if (score < beta)
@@ -170,6 +178,7 @@ namespace Hexdame.Player
 
                         if (value > score)
                         {
+                            bestMove = move;
                             score = value;
                         }
                         if (score >= beta)
@@ -184,7 +193,7 @@ namespace Hexdame.Player
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(alpha, score, depth, null);
+                    Transposition transposition = new Transposition(alpha, score, depth, bestMove);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -192,13 +201,14 @@ namespace Hexdame.Player
                     Transposition transposition = transpositionTable[zHash];
                     transposition.Upperbound = score;
                     transposition.Depth = depth;
+                    transposition.BestMove = bestMove;
                 }
             }
             else if (score > alpha && score < beta)
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(score, score, depth, null);
+                    Transposition transposition = new Transposition(score, score, depth, bestMove);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -207,13 +217,14 @@ namespace Hexdame.Player
                     transposition.Lowerbound = score;
                     transposition.Upperbound = score;
                     transposition.Depth = depth;
+                    transposition.BestMove = bestMove;
                 }
             }
             else if (score >= beta)
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(score, beta, depth, null);
+                    Transposition transposition = new Transposition(score, beta, depth, bestMove);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -221,17 +232,26 @@ namespace Hexdame.Player
                     Transposition transposition = transpositionTable[zHash];
                     transposition.Lowerbound = score;
                     transposition.Depth = depth;
+                    transposition.BestMove = bestMove;
                 }
             }
 
             return score;
         }
 
-        public void OrderMoves(List<Move> moves, Gameboard state)
+        public void OrderMoves(List<Move> moves, Gameboard state, Move bestMove = null)
         {
             // Assign values to moves, if possible
             for (int i = 0; i < moves.Count; i++)
             {
+                moves[i].Value = 0;
+
+                // Check for best move from last iteration
+                if (moves[i] == bestMove)
+                {
+                    moves[i].Value = 1;
+                }
+
                 Gameboard newState = (Gameboard)state.Clone();
                 GameLogic newLogic = new GameLogic(newState);
                 newLogic.ApplyMove(moves[i]);
@@ -242,7 +262,7 @@ namespace Hexdame.Player
                     Transposition transposition = transpositionTable[zHash];
                     if (transposition.Lowerbound == transposition.Upperbound)
                     {
-                        moves[i].Value = transposition.Lowerbound;
+                        moves[i].Value += transposition.Lowerbound;
                     }
                 }
             }

@@ -117,6 +117,7 @@
             this.MinimumSize = new System.Drawing.Size(800, 700);
             this.Name = "Gui";
             this.Text = "Hexdame";
+            this.Shown += new System.EventHandler(this.Gui_Shown);
             this.panelMenu.ResumeLayout(false);
             this.panelMenu.PerformLayout();
             this.ResumeLayout(false);

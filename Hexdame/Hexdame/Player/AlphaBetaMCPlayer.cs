@@ -44,15 +44,14 @@ namespace Hexdame.Player
                 return possibleMoves[0];
             }
 
-            for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
+            int startDepth = (depth % 2 == 0) ? 2 : 1;
+
+            for (int currentDepth = startDepth; currentDepth <= depth; currentDepth += 2)
             {
                 bestValue = int.MinValue;
                 bestMove.Clear();
 
-                //if(currentDepth > 1)
-                {
-                    OrderMoves(possibleMoves, gameboard);
-                }
+                OrderMoves(possibleMoves, gameboard);
 
                 int alpha = GameLogic.LOSS_VALUE;
                 int beta = GameLogic.WIN_VALUE;
@@ -90,9 +89,6 @@ namespace Hexdame.Player
             n++;
             Console.WriteLine("Average Nodes: {0}, n={1}", iterationCounter / n, n);
 
-            // DEBUG
-            //transpositionTable.Clear();
-
             // Return one of the best moves
             return bestMove[random.Next(bestMove.Count)];
         }
@@ -103,13 +99,17 @@ namespace Hexdame.Player
             iterationCounter++;
 
             Int64 zHash = state.GetZobristHash();
+
+            Move bestMove = null;
+
             if (transpositionTable.ContainsKey(zHash))
             {
                 Transposition transposition = transpositionTable[zHash];
 
+                bestMove = transposition.BestMove;
+
                 if (transposition.Depth >= depth)
                 {
-                    // TODO possible to just return exact value?
                     if (transposition.Lowerbound == transposition.Upperbound)
                     {
                         return transposition.Lowerbound;
@@ -140,10 +140,9 @@ namespace Hexdame.Player
                 score = int.MinValue;
                 var possibleMoves = gameLogic.GetPossibleMoves();
 
-                if (depth > 1)
-                {
-                    OrderMoves(possibleMoves, state);
-                }
+                OrderMoves(possibleMoves, state);
+                // Reset best move
+                bestMove = null;
 
                 // Multi-Cut
                 {
@@ -195,6 +194,7 @@ namespace Hexdame.Player
                     int value = -AlphaBeta(newState, depth - 1, -beta, -alpha, !myMove);
                     if (value > score)
                     {
+                        bestMove = move;
                         score = value;
                     }
                     if (score > alpha)
@@ -212,7 +212,7 @@ namespace Hexdame.Player
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(alpha, score, depth, null);
+                    Transposition transposition = new Transposition(alpha, score, depth, bestMove);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -220,13 +220,14 @@ namespace Hexdame.Player
                     Transposition transposition = transpositionTable[zHash];
                     transposition.Upperbound = score;
                     transposition.Depth = depth;
+                    transposition.BestMove = bestMove;
                 }
             }
             else if (score > alpha && score < beta)
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(score, score, depth, null);
+                    Transposition transposition = new Transposition(score, score, depth, bestMove);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -235,13 +236,14 @@ namespace Hexdame.Player
                     transposition.Lowerbound = score;
                     transposition.Upperbound = score;
                     transposition.Depth = depth;
+                    transposition.BestMove = bestMove;
                 }
             }
             else if (score >= beta)
             {
                 if (!transpositionTable.ContainsKey(zHash))
                 {
-                    Transposition transposition = new Transposition(score, beta, depth, null);
+                    Transposition transposition = new Transposition(score, beta, depth, bestMove);
                     transpositionTable.Add(state.GetZobristHash(), transposition);
                 }
                 else
@@ -249,17 +251,26 @@ namespace Hexdame.Player
                     Transposition transposition = transpositionTable[zHash];
                     transposition.Lowerbound = score;
                     transposition.Depth = depth;
+                    transposition.BestMove = bestMove;
                 }
             }
 
             return score;
         }
 
-        public void OrderMoves(List<Move> moves, Gameboard state)
+        public void OrderMoves(List<Move> moves, Gameboard state, Move bestMove = null)
         {
             // Assign values to moves, if possible
             for (int i = 0; i < moves.Count; i++)
             {
+                moves[i].Value = 0;
+
+                // Check for best move from last iteration
+                if (moves[i] == bestMove)
+                {
+                    moves[i].Value = 1;
+                }
+
                 Gameboard newState = (Gameboard)state.Clone();
                 GameLogic newLogic = new GameLogic(newState);
                 newLogic.ApplyMove(moves[i]);
@@ -270,7 +281,7 @@ namespace Hexdame.Player
                     Transposition transposition = transpositionTable[zHash];
                     if (transposition.Lowerbound == transposition.Upperbound)
                     {
-                        moves[i].Value = transposition.Lowerbound;
+                        moves[i].Value += transposition.Lowerbound;
                     }
                 }
             }
@@ -279,7 +290,6 @@ namespace Hexdame.Player
 
         public static int MoveComparison(Move m1, Move m2)
         {
-            // TODO maybe negate?
             return m1.Value.CompareTo(m2.Value);
         }
 

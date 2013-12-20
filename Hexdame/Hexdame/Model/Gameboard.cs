@@ -171,6 +171,7 @@ namespace Hexdame
 
         private static void InitialiseZobristValues()
         {
+            // Generate some random values
             Random random = new Random();
 
             zobristRandomPositionValues = new Int64[FIELD_SIZE*FIELD_SIZE,6];

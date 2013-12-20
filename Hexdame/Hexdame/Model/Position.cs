@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Hexdame
 {
+    /// <summary>
+    /// A position consists of a number and a character to specify a place on the game board. The number starts with 1, the character with a. A number can be used for the character as well.
+    /// </summary>
     public struct Position
     {
         private int number;

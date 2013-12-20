@@ -44,7 +44,6 @@ namespace Hexdame.Player
                 return possibleMoves[0];
             }
 
-            // TODO
             OrderMoves(possibleMoves, gameboard);
 
             int alpha = GameLogic.LOSS_VALUE;
@@ -119,10 +118,6 @@ namespace Hexdame.Player
                     alpha = Math.Max(alpha, transposition.Lowerbound);
                     beta = Math.Min(beta, transposition.Upperbound);
                 }
-                else if (transposition.Depth >= 1)
-                {
-                    moveOrdering = true;
-                }
             }
 
             GameLogic gameLogic = new GameLogic(state);
@@ -137,13 +132,9 @@ namespace Hexdame.Player
                 score = int.MinValue;
                 var possibleMoves = gameLogic.GetPossibleMoves();
 
-                // TODO move ordering
-                if (moveOrdering)
-                {
-                    OrderMoves(possibleMoves, state, bestMove);
-                    // Reset best move
-                    bestMove = null;
-                }
+                OrderMoves(possibleMoves, state, bestMove);
+                // Reset best move
+                bestMove = null;
 
                 foreach (Move move in possibleMoves)
                 {
@@ -229,7 +220,6 @@ namespace Hexdame.Player
                 if(moves[i] == bestMove)
                 {
                     moves[i].Value = 1;
-                    //continue;
                 }
 
                 Gameboard newState = (Gameboard)state.Clone();
