@@ -7,8 +7,8 @@ namespace Hexdame.Player
 {
     class Evaluation
     {
-        protected int weightMan = 1000;
-        protected int weightKing = 1500;
+        protected int weightMan = 10;
+        protected int weightKing = 15;
         protected int weightMovementMan = 0;
         protected int weightMovementKing = 0;
 
